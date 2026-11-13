@@ -1,0 +1,41 @@
+# Daily database backup (free). Supabase's free plan has no downloadable backups,
+# so this dumps the database every night and keeps it as a GitHub Actions artifact for 30 days.
+# Setup: GitHub repo → Settings → Secrets and variables → Actions → New secret
+#   SUPABASE_DB_URL = the "Session pooler" connection string from Supabase → Connect
+#   (postgresql://postgres.xxxx:PASSWORD@aws-0-ap-south-1.pooler.supabase.com:5432/postgres)
+# Bonus: this also counts as activity, so the free project does not get paused.
+name: Database backup
+on:
+  schedule:
+    - cron: '17 21 * * *' # 02:47 IST daily
+  workflow_dispatch:
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip if not configured
+        id: check
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$DB" ]; then echo "SUPABASE_DB_URL secret not set — skipping."; echo "skip=true" >> "$GITHUB_OUTPUT"; fi
+      - name: Install PostgreSQL 17 client
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          sudo apt-get install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y postgresql-client-17
+      - name: Dump
+        if: steps.check.outputs.skip != 'true'
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          /usr/lib/postgresql/17/bin/pg_dump "$DB" --schema=public --no-owner --no-privileges -f backup.sql
+          /usr/lib/postgresql/17/bin/pg_dump "$DB" --schema=auth --data-only --table=auth.users -f auth-users.sql
+          gzip backup.sql auth-users.sql
+      - uses: actions/upload-artifact@v4
+        if: steps.check.outputs.skip != 'true'
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: '*.gz'
+          retention-days: 30
