@@ -12,6 +12,8 @@ import { AttendanceStrip } from '../admin/MemberDetail';
 import { DemoBanner } from '../../components/DemoBanner';
 
 type Tab = 'workout' | 'diet' | 'progress' | 'payments';
+const TAB_ICON: Record<Tab, string> = { workout: '🏋️', diet: '🥗', progress: '📈', payments: '🧾' };
+const TAB_LABEL: Record<Tab, string> = { workout: 'Workout', diet: 'Diet', progress: 'Progress', payments: 'Payments' };
 
 export default function MemberPortal() {
   const { session, refresh } = useAuth();
@@ -110,7 +112,8 @@ export default function MemberPortal() {
         <nav className="portal-tabs" role="tablist">
           {(['workout', 'diet', 'progress', 'payments'] as Tab[]).map((t) => (
             <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>
-              {{ workout: '🏋️ Workout', diet: '🥗 Diet', progress: '📈 Progress', payments: '🧾 Payments' }[t]}
+              <span aria-hidden="true">{TAB_ICON[t]}</span>
+              <span>{TAB_LABEL[t]}</span>
             </button>
           ))}
         </nav>

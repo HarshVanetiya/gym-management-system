@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>How it is built · Gym System Demo</title>
+<link rel="prev" href="10-daily-flow.html">
+<link rel="next" href="12-costs.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="slides.css">
+</head>
+<body>
+<main class="stage">
+  <section class="slide split-even" aria-label="How it is built">
+    <div class="copy">
+      <p class="eyebrow">Under the hood</p>
+      <h2>Built on dependable, low-cost tools</h2>
+      <ul class="points"><li><strong>Next.js</strong> website and app: fast pages, readable by Google.</li><li><strong>Supabase</strong> (Postgres database + logins), Mumbai region.</li><li><strong>Database security rules</strong>: a member can only ever see their own data, and only the trainer can change payments.</li><li><strong>Nightly backup</strong> to GitHub, free.</li><li><strong>India network fix</strong>: Supabase was blocked on some ISPs in 2026, so the app can run through the gym’s own domain.</li></ul>
+    </div>
+    <div class="cards" style="grid-template-columns:1fr">
+      <div class="card"><div class="who">Member logins</div><p>Trainer saves the member’s email → member signs up with it → their plan appears automatically. Email confirmation proves it is really them.</p></div>
+      <div class="card"><div class="who">Demo mode</div><p>Without a database the app runs on sample data in the browser, which is how this demo works offline.</p></div>
+      <div class="card"><div class="who">Owned by the gym</div><p>All data can be exported any time. No lock-in to a gym-software vendor.</p></div>
+    </div>
+  </section>
+</main>
+<nav class="controls" aria-label="Slide navigation">
+  <a href="10-daily-flow.html" >← Prev</a>
+  <span class="count">11 / 14</span>
+  <a href="12-costs.html" >Next →</a>
+  <div class="progress" aria-hidden="true"><span style="width:78.57142857142857%"></span></div>
+  <a href="index.html">Contents</a>
+  <button type="button" class="fs" data-fullscreen>Full screen</button>
+  <span class="hint">← → keys</span>
+</nav>
+<script src="slides.js"></script>
+</body>
+</html>
