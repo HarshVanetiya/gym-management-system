@@ -4,7 +4,7 @@ Built for **Medilife Fitness Club (MFC), Kashipuri Colony, Udaipur**. Designed m
 
 **Design.** Two palettes, each with light and dark versions, defined as CSS variables at the top of `src/app/globals.css`:
 - Website and login page: black, prussian blue `#14213d`, orange `#fca311`, alabaster grey `#e5e5e5`, white.
-- Dashboards (trainer dashboard, member app): the blue scale from deep twilight `#03045e` to light cyan `#caf0f8`.
+- Dashboards (trainer dashboard, member app): neutral greys with hairline borders and no shadows, near-black buttons, and colour only for status. The brand orange appears in the logo mark and the membership meter.
 
 Type: Manrope + Inter + JetBrains Mono, with Cormorant Garamond italics for accents. All fonts are bundled, so they also work offline.
 

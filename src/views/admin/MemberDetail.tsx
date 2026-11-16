@@ -116,7 +116,7 @@ export default function MemberDetail() {
         <section className="card">
           <div className="card-head">
             <h3><Icon.Wallet /> Payments</h3>
-            <button className="btn btn-sm" onClick={() => setModal('pay')}><Icon.Plus width={16} height={16} /> Payment</button>
+            <button className="btn btn-sm btn-ghost" onClick={() => setModal('pay')}><Icon.Plus width={16} height={16} /> Payment</button>
           </div>
           {data.payments.length === 0 ? <Empty>No payments recorded.</Empty> : (
             <ul className="list compact">
@@ -157,7 +157,7 @@ export default function MemberDetail() {
         <section className="card">
           <div className="card-head">
             <h3><Icon.Check /> Attendance</h3>
-            {checkedToday ? <span className="badge badge-active"><Icon.Check width={14} height={14} /> In today</span> : <button className="btn btn-sm" onClick={checkIn}>Check in</button>}
+            {checkedToday ? <span className="badge badge-active"><Icon.Check width={14} height={14} /> In today</span> : <button className="btn btn-sm btn-ghost" onClick={checkIn}>Check in</button>}
           </div>
           <p><strong>{last30}</strong> visits in the last 30 days</p>
           <AttendanceStrip dates={data.attendance.map((a) => a.check_in)} />

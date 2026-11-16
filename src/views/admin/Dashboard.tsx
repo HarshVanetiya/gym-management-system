@@ -47,15 +47,14 @@ export default function Dashboard() {
           <h1>Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}</h1>
           <p className="muted">{fmtDate(today)} · here’s what needs your attention</p>
         </div>
-        <Link href="/admin/members?new=1" className="btn desk-only"><Icon.Plus width={18} height={18} /> Add member</Link>
       </div>
 
       <div className="stats">
         <StatCard label="Active members" icon={<Icon.Users />} value={stats.active} sub={`of ${data.members.length} total`} />
-        <StatCard label="Expiring · 7 days" icon={<Icon.Clock />} value={stats.expiring.length} tone="warn" sub="need a reminder" />
+        <StatCard label="Expiring" icon={<Icon.Clock />} value={stats.expiring.length} tone="warn" sub="in the next 7 days" />
         <StatCard label="Pending dues" icon={<Icon.Alert />} value={money(stats.dues.reduce((t, x) => t + x.due, 0))} tone="danger" sub={`${stats.dues.length} members`} />
-        <StatCard label="Collected · this month" icon={<Icon.Wallet />} value={money(stats.collected)} tone="good" />
-        <StatCard label="Checked in today" icon={<Icon.Check />} value={checkedIn.size} />
+        <StatCard label="Collected" icon={<Icon.Wallet />} value={money(stats.collected)} tone="good" sub="this month" />
+        <StatCard label="Checked in" icon={<Icon.Check />} value={checkedIn.size} sub="today" />
         <StatCard label="New enquiries" icon={<Icon.Inbox />} value={<Link href="/admin/leads">{extra.data?.leads.length ?? 0}</Link>} sub="from the website" />
       </div>
 
