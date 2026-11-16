@@ -188,3 +188,6 @@ table.compact .tag { font-size: 0.9cqw; }
 .split .phones { gap: 1.4cqw; }
 .split .phones .phone { width: 14.5cqw; }
 @media (max-width: 760px) { .split .phones .phone { width: 46%; } }
+.login-pair { display: grid; grid-template-columns: auto 1fr; gap: 1.8cqw; align-items: center; min-width: 0; }
+.login-pair .phone { width: 15cqw; }
+@media (max-width: 760px) { .login-pair { grid-template-columns: 1fr; } .login-pair .phone { width: 60%; margin: 0 auto; } }
