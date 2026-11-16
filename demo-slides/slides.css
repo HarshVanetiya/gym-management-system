@@ -172,3 +172,7 @@ tr.pick td { background: var(--accent-soft); }
   .title-slide .toc a { font-size: 14px; white-space: normal; }
   .frame.mini img { height: 180px; }
 }
+table.compact { font-size: 1.12cqw; }
+table.compact th, table.compact td { padding: 0.55cqw 1cqw; }
+table.compact .tag { font-size: 0.9cqw; }
+@media (max-width: 760px) { table.compact { font-size: 14px; } table.compact .tag { font-size: 11px; } }
