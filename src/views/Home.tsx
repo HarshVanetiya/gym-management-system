@@ -67,10 +67,9 @@ export default function Home({ initial }: { initial: PublicData | null }) {
                   <span className="tone">Fitness</span>
                   <span className="tone">Club</span>
                 </h1>
-                {site?.tagline_hi && <p className="hero-hi" lang="hi">{site.tagline_hi}</p>}
                 <p className="hero-note">{site?.tagline ? `${site.tagline} ` : ''}{site?.bio}</p>
                 <div className="hero-cta">
-                  <a href="#join" className="btn btn-lg">Book a free trial <span className="arr" aria-hidden="true">↗</span></a>
+                  <a href="#join" className="btn btn-lg btn-pop">Book a free trial <span className="arr" aria-hidden="true">↗</span></a>
                   {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn btn-lg btn-ghost">WhatsApp us <span className="arr" aria-hidden="true">→</span></a>}
                 </div>
                 {stats.length > 0 && (
@@ -79,14 +78,14 @@ export default function Home({ initial }: { initial: PublicData | null }) {
                   </div>
                 )}
               </div>
-              <div className="arch">
+              <div className="hero-panel">
                 {site?.hero_image_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={site.hero_image_url} alt={`Inside ${name}`} />
                 ) : (
                   <>
                     <PulseBarbell className="mark" />
-                    <span className="arch-cap">Health · Strength · Life</span>
+                    <span className="panel-cap">Health · Strength · Life</span>
                   </>
                 )}
               </div>
@@ -253,7 +252,7 @@ export default function Home({ initial }: { initial: PublicData | null }) {
         <div className="wrap">
           <div className="foot-grid">
             <div>
-              <span className="brand" style={{ color: 'var(--on-maroon)' }}><span className="brand-mark" style={{ background: 'var(--gold)', color: 'var(--maroon)' }}>MFC</span>{name}</span>
+              <span className="brand" style={{ color: 'var(--on-deep)' }}><span className="brand-mark" style={{ background: 'var(--pop)', color: 'var(--pop-ink)' }}>MFC</span>{name}</span>
               <p style={{ marginTop: 12, opacity: 0.75, maxWidth: '36ch' }}>{site?.address}</p>
             </div>
             <div>

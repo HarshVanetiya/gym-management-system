@@ -3,7 +3,6 @@ update public.site_settings set
   gym_name = 'Medilife Fitness Club',
   trainer_name = 'MFC Coaches',
   tagline = 'Train smart. Live strong.',
-  tagline_hi = 'स्वस्थ शरीर, सशक्त मन',
   bio = 'A neighbourhood gym in Kashipuri Colony, Udaipur. Every member gets a workout and diet plan in the MFC app.',
   phone = '+91 98765 43210',
   whatsapp = '919876543210',

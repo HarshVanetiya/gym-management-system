@@ -5,10 +5,11 @@ import { RegisterServiceWorker } from '../components/Pwa';
 // Fonts are bundled with the app (no Google Fonts request), so they also work offline.
 import '@fontsource-variable/manrope';
 import '@fontsource-variable/inter';
-import '@fontsource-variable/fraunces/wght-italic.css';
+import '@fontsource/cormorant-garamond/300.css';
+import '@fontsource/cormorant-garamond/300-italic.css';
+import '@fontsource/cormorant-garamond/400-italic.css';
 import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';
-import '@fontsource/tiro-devanagari-hindi/devanagari-400.css';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -25,8 +26,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f7f2e8' },
-    { media: '(prefers-color-scheme: dark)', color: '#12100f' },
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
   ],
 };
 

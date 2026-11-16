@@ -6,12 +6,11 @@ import { invalidateSite, useAsync } from '../../lib/hooks';
 import type { SiteSettings, Testimonial } from '../../lib/types';
 import { ErrorBox, Field, Loading } from '../../components/ui';
 
-type TextKey = Exclude<keyof SiteSettings, 'id' | 'years_experience' | 'clients_trained' | 'certifications' | 'gallery_urls'>;
+type TextKey = Exclude<keyof SiteSettings, 'id' | 'years_experience' | 'clients_trained' | 'certifications' | 'gallery_urls' | 'tagline_hi'>;
 const TEXT_FIELDS: [TextKey, string, string?][] = [
   ['gym_name', 'Gym name'],
   ['trainer_name', 'Trainer name'],
   ['tagline', 'Short tagline'],
-  ['tagline_hi', 'Hindi tagline', 'Shown in Devanagari under the big name, e.g. स्वस्थ शरीर, सशक्त मन'],
   ['hero_image_url', 'Main photo link', 'Paste a photo link (e.g. from Google Photos or the gym’s site). Leave empty to show the MFC artwork.'],
   ['phone', 'Phone'],
   ['whatsapp', 'WhatsApp number', 'With country code, digits only — e.g. 919876543210'],

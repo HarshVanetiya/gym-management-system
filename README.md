@@ -2,6 +2,12 @@
 
 Built for **Medilife Fitness Club (MFC), Kashipuri Colony, Udaipur**. Designed mobile-first and installable as an app (PWA).
 
+**Design.** Two palettes, each with light and dark versions, defined as CSS variables at the top of `src/app/globals.css`:
+- Website: black, prussian blue `#14213d`, orange `#fca311`, alabaster grey `#e5e5e5`, white.
+- Dashboards (trainer dashboard, member app, login): the blue scale from deep twilight `#03045e` to light cyan `#caf0f8`.
+
+Type: Manrope + Inter + JetBrains Mono, with Cormorant Garamond italics for accents. All fonts are bundled, so they also work offline.
+
 A complete web system for a personal trainer / small gym, built with **Next.js (React) + Supabase**.
 The public website is rendered on the server, so search engines see the full page and the gym shows up as a local business (structured data).
 It has three parts in one app:

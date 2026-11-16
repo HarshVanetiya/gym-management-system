@@ -164,7 +164,7 @@ export function buildSeed(): { [K in TableName]: Tables[K][] } {
       clients_trained: 0,
       certifications: [],
       upi_id: 'medilife@upi',
-      tagline_hi: 'स्वस्थ शरीर, सशक्त मन',
+      tagline_hi: null,
       hero_image_url: null,
       gallery_urls: [],
     }],
