@@ -102,6 +102,29 @@ A single gym has roughly 100–300 members. One year of daily attendance for 300
 
 **Downsides:** ₹10,000–24,000+ per year **and no custom portfolio website**. Member apps are often generic or cost extra. Your data sits in their system.
 
+### Option F: Offline desktop app (trainer's computer only)
+
+An installable Windows app that holds **only the trainer dashboard**: members, renewals, payments, attendance, workout and diet templates. It stores everything in a local SQLite database file on the trainer's PC and needs no internet. The same dashboard screens from this project can be wrapped with **Tauri** (small installer, uses the Windows WebView) or **Electron** (bundles its own browser, much larger installer).
+
+| Item | Cost |
+|---|---|
+| Hosting / database | ₹0 (runs on the trainer's PC) |
+| Code-signing certificate (optional, removes the "Unknown publisher" warning) | ≈ $219/year (≈ ₹20,000) for an entry-level OV certificate; can be skipped for a single PC |
+| Backup drive or Google Drive folder for the database file | ₹0–1,500 one-time |
+| **Total** | **≈ ₹0 per year** (or ≈ ₹20k/yr if you sign the installer) |
+
+**Upsides:** works with no internet at all, no monthly bills, no vendor pausing or India ISP blocks, and the data never leaves the gym. It's fast on old PCs too, especially with Tauri.
+
+**Downsides:**
+- **No member app, no website enquiries, and no access from the trainer's phone.** Those need a server on the internet. Members can't log in to see their workout or diet.
+- **One computer only.** If the PC dies or is stolen and there's no backup, all records are gone. Backups become the trainer's job.
+- Updates are installed by hand, with a new installer for each version.
+- Without a signed installer, Windows SmartScreen shows a warning the first time.
+
+**Hybrid option:** the desktop app works offline and syncs to Supabase when the internet is available, so the member app and website keep working. This is the most capable setup and also the most complex to build (Large effort: conflict handling, sync queue).
+
+**When it fits:** the trainer only wants a digital register at the front desk, and doesn't care about a member app or website leads.
+
 ### Summary
 
 | Option | ~Yearly cost | Effort for you | Reliability | Recommended for |
@@ -111,6 +134,7 @@ A single gym has roughly 100–300 members. One year of daily attendance for 300
 | C. Firebase | ₹0–1,200 | Medium (rewrite data layer) | Very good | If Supabase keeps failing in India |
 | D. VPS + PocketBase | ₹8k–13.5k | **High (ongoing)** | Depends on you | Only if you enjoy ops |
 | E. Off-the-shelf software | ₹10k–24k+ | None | Good | If nobody can maintain custom code |
+| F. Offline desktop app | ₹0 (≈ ₹20k/yr if code-signed) | Low running, Medium build | Good, only if backed up | Front-desk register only, no member app or website |
 
 ### Being fair to your friend
 
@@ -144,6 +168,10 @@ A single gym has roughly 100–300 members. One year of daily attendance for 300
 ---
 
 ## Sources
+
+- Desktop app frameworks: [Tauri vs Electron installer sizes (DoltHub)](https://dolthub.com/blog/2025-11-13-electron-vs-tauri), [Tauri 2 overview](https://www.noqta.tn/en/blog/tauri-2-desktop-apps-rust-web-technologies-2026)
+- Windows code signing prices: [SSL Insights guide](https://sslinsights.com/best-code-signing-certificate-for-windows-application/), [Microsoft code signing options](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/code-signing-options)
+- Next.js PWA support: [Next.js PWA guide](https://nextjs.org/docs/app/guides/progressive-web-apps)
 
 - Supabase pricing & free-tier limits: [supabase.com/pricing](https://supabase.com/pricing), [custom domain billing](https://supabase.com/docs/guides/platform/manage-your-usage/custom-domains), [jetadmin review](https://www.jetadmin.io/blog/supabase-pricing-2026-guide-to-plans-limits-and-real-world-costs/), [automationatlas](https://automationatlas.io/answers/supabase-free-tier-limits-2026/)
 - Supabase blocked in India: [TechCrunch](https://www.techcrunch.com/2026/02/27/india-disrupts-access-to-popular-developer-platform-supabase-with-blocking-order/), [Analytics India Mag (restored)](https://analyticsindiamag.com/ai-news/india-restores-access-to-supabase-after-isp-level-block), [dev.to: proxy fix](https://dev.to/amit_verma_metefy/fix-supabase-down-on-jio-and-jiofiber-by-hiding-supabase-behind-your-own-domain-free-tier-a15)

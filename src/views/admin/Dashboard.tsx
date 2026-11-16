@@ -45,7 +45,7 @@ export default function Dashboard() {
           <h1>Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'} 👋</h1>
           <p className="muted">{fmtDate(today)} · here’s what needs your attention</p>
         </div>
-        <Link href="/admin/members?new=1" className="btn">+ Add member</Link>
+        <Link href="/admin/members?new=1" className="btn desk-only">+ Add member</Link>
       </div>
 
       <div className="stats">
@@ -59,15 +59,15 @@ export default function Dashboard() {
 
       <div className="grid-2">
         <section className="card">
-          <h3>⏳ Expiring soon</h3>
+          <h3>Expiring soon</h3>
           <ReminderList rows={stats.expiring} gym={site?.gym_name ?? ''} upi={site?.upi_id} empty="No memberships expiring this week." />
         </section>
         <section className="card">
-          <h3>⛔ Expired (last 30 days)</h3>
+          <h3>Expired · last 30 days</h3>
           <ReminderList rows={stats.expired} gym={site?.gym_name ?? ''} upi={site?.upi_id} empty="Nobody has lapsed recently." />
         </section>
         <section className="card">
-          <h3>💸 Payment dues</h3>
+          <h3>Payment dues</h3>
           <ReminderList rows={stats.dues} gym={site?.gym_name ?? ''} upi={site?.upi_id} showDue empty="All payments are clear." />
         </section>
         <QuickCheckIn summaries={data.summaries} checkedIn={checkedIn} onDone={() => { extra.reload(); reload(); }} />
@@ -120,7 +120,7 @@ function QuickCheckIn({ summaries, checkedIn, onDone }: { summaries: MemberSumma
   }
   return (
     <section className="card">
-      <h3>✅ Quick check-in</h3>
+      <h3>Quick check-in</h3>
       <input placeholder="Search name or phone…" value={q} onChange={(e) => setQ(e.target.value)} />
       <ul className="list">
         {matches.map((s) => (

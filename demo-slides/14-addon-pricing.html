@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
-<title>Add-on pricing · Gym System Demo</title>
+<title>Add-on pricing · Medilife Demo</title>
 <link rel="prev" href="13-core-pricing.html">
 <link rel="next" href="15-packages.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Fraunces:ital,wght@1,400&display=swap">
 <link rel="stylesheet" href="slides.css">
 </head>
 <body>
@@ -22,7 +22,8 @@
       <thead><tr><th>Add-on</th><th>Running cost</th><th>Build effort</th><th>Notes</th></tr></thead>
       <tbody>
         <tr><td><strong>UPI QR in member app</strong></td><td class="num">₹0</td><td><span class="tag good">Small</span></td><td>Member scans and pays, trainer confirms.</td></tr>
-        <tr><td><strong>Install as an app (PWA)</strong></td><td class="num">₹0</td><td><span class="tag good">Small</span></td><td>Home-screen icon, no Play Store fee.</td></tr>
+        <tr><td><strong>Offline desktop app (Windows)</strong></td><td class="num">₹0<br>+ ≈ ₹20k/yr signing</td><td><span class="tag warn">Medium</span></td><td>Dashboard only, on the trainer’s PC. Signing is optional: it removes the “Unknown publisher” warning.</td></tr>
+        <tr><td><strong>Desktop app + online sync</strong></td><td class="num">₹0</td><td><span class="tag">Large</span></td><td>Works offline, syncs to the database when online, so the member app keeps working.</td></tr>
         <tr><td><strong>QR self check-in</strong></td><td class="num">₹0</td><td><span class="tag good">Small</span></td><td>QR poster at the desk, one check-in per day.</td></tr>
         <tr><td><strong>Progress photos</strong></td><td class="num">₹0</td><td><span class="tag warn">Medium</span></td><td>Fits in Supabase’s free 1 GB storage. Needs member consent.</td></tr>
         <tr><td><strong>Automatic WhatsApp reminders</strong></td><td class="num">≈ ₹40 / month</td><td><span class="tag warn">Medium</span></td><td>≈ ₹0.115 per message + GST, about 300 messages a month. Verified business number needed.</td></tr>

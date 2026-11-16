@@ -7,13 +7,16 @@ import { useAsync, useAuth } from '../lib/hooks';
 import { loadPublicData, type PublicData } from '../lib/public-data';
 import { money, whatsappLink } from '../lib/utils';
 import { DemoBanner } from '../components/DemoBanner';
+import { Icon, PulseBarbell } from '../components/icons';
+import { InstallApp } from '../components/Pwa';
 
-const SERVICES = [
-  { icon: '🏋️', title: 'Strength Training', text: 'Learn the big lifts with proper form. Progressive programs that keep you getting stronger.' },
-  { icon: '🔥', title: 'Fat Loss Coaching', text: 'Sustainable fat loss with structured workouts and an Indian diet you can actually follow.' },
-  { icon: '🥗', title: 'Diet Plans', text: 'Veg, non-veg and eggetarian plans built around your routine, budget and goals.' },
-  { icon: '📱', title: 'Member App', text: 'Check today’s workout, your diet, membership expiry and progress from your phone.' },
+const OFFER = [
+  { title: 'Strength training', text: 'Free weights, machines and proper form coaching, so you get stronger week after week.', chips: ['Free weights', 'Machines', 'Form checks'] },
+  { title: 'Fat loss', text: 'Structured workouts plus a diet built on everyday Rajasthani and Indian food.', chips: ['Cardio', 'Diet plan', 'Weekly check-ins'] },
+  { title: 'Personal training', text: 'One-on-one sessions with a plan written for your body, schedule and goals.', chips: ['1-on-1', 'Custom plan', 'Progress tracking'] },
+  { title: 'Member app', text: 'Today’s workout, your diet, membership days left and payments, on your phone.', chips: ['Workout', 'Diet', 'Progress'] },
 ];
+const MARQUEE = ['Strength', 'Cardio', 'Personal training', 'Fat loss', 'Diet plans', 'Muscle gain', 'Mobility'];
 
 /** `initial` is rendered on the server when Supabase is configured; in demo mode data loads in the browser. */
 export default function Home({ initial }: { initial: PublicData | null }) {
@@ -21,144 +24,270 @@ export default function Home({ initial }: { initial: PublicData | null }) {
   const loaded = useAsync(async () => initial ?? loadPublicData(store), []);
   const pub = loaded.data ?? initial;
   const site = pub?.site;
-  const plans = { data: pub?.plans };
-  const testimonials = { data: pub?.testimonials };
-  const [menuOpen, setMenuOpen] = useState(false);
+  const plans = pub?.plans ?? [];
+  const testimonials = pub?.testimonials ?? [];
 
-  const wa = whatsappLink(site?.whatsapp, `Hi ${site?.trainer_name ?? ''}, I found your website and want to know more about joining.`);
+  const name = site?.gym_name ?? 'Medilife Fitness Club';
+  const wa = whatsappLink(site?.whatsapp, `Hi ${name}, I found your website and want to know more about joining.`);
   const portalLink = session ? (session.role === 'admin' ? '/admin' : '/me') : '/login';
+  const area = site?.address?.split(',').slice(0, 2).join(' · ') ?? 'Udaipur';
+  const featured = plans.length > 2 ? 2 : plans.length - 1;
+
+  const stats = [
+    site?.years_experience ? { v: `${site.years_experience}+`, l: 'Years' } : null,
+    site?.clients_trained ? { v: `${site.clients_trained}+`, l: 'Members trained' } : null,
+    plans.length ? { v: String(plans.length), l: 'Membership plans' } : null,
+    plans.length ? { v: money(Math.min(...plans.map((p) => Number(p.price)))), l: 'Plans from' } : null,
+  ].filter(Boolean) as { v: string; l: string }[];
 
   return (
-    <div className="site">
+    <div className="site" id="top">
       <DemoBanner />
-      <header className="site-nav">
-        <a href="#top" className="brand"><span className="brand-mark">IF</span>{site?.gym_name ?? 'Gym'}</a>
-        <button className="nav-toggle" onClick={() => setMenuOpen((o) => !o)} aria-label="Menu">☰</button>
-        <nav className={menuOpen ? 'open' : ''} onClick={() => setMenuOpen(false)}>
-          <a href="#about">About</a>
-          <a href="#programs">Programs</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#results">Results</a>
-          <a href="#contact">Contact</a>
-          <Link href={portalLink} className="btn btn-sm">{session ? 'My Dashboard' : 'Member Login'}</Link>
-        </nav>
+      <header className="topbar">
+        <div className="wrap topbar-inner">
+          <a href="#top" className="brand"><span className="brand-mark">MFC</span><span>Medilife<small>Fitness Club</small></span></a>
+          <nav aria-label="Sections">
+            <a href="#offer">Training</a>
+            <a href="#plans">Plans</a>
+            <a href="#app">App</a>
+            <a href="#visit">Visit</a>
+          </nav>
+          <Link href={portalLink} className="btn">{session ? 'My plan' : 'Login'} <span className="arr" aria-hidden="true">↗</span></Link>
+        </div>
       </header>
 
-      <section className="hero" id="top">
-        <div className="hero-inner">
-          <p className="eyebrow">{site?.trainer_name} · Personal Trainer</p>
-          <h1>{site?.tagline ?? 'Stronger every week.'}</h1>
-          <p className="hero-sub">Personal training, structured workout plans and practical diet coaching — all tracked in one place.</p>
-          <div className="hero-cta">
-            <a href="#contact" className="btn btn-lg">Book a free trial</a>
-            {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn btn-lg btn-ghost">Chat on WhatsApp</a>}
-          </div>
-          <div className="hero-stats">
-            <div><strong>{site?.years_experience ?? 0}+</strong><span>Years coaching</span></div>
-            <div><strong>{site?.clients_trained ?? 0}+</strong><span>Clients trained</span></div>
-            <div><strong>{plans.data?.length ?? 0}</strong><span>Membership plans</span></div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section" id="about">
-        <div className="container two-col">
-          <div className="about-photo" aria-hidden="true">
-            <span>{(site?.trainer_name ?? 'C').replace('Coach ', '').slice(0, 1)}</span>
-          </div>
-          <div>
-            <p className="eyebrow">About the coach</p>
-            <h2>Meet {site?.trainer_name}</h2>
-            <p className="lead">{site?.bio}</p>
-            {!!site?.certifications?.length && (
-              <ul className="cert-list">
-                {site.certifications.map((c) => <li key={c}>✔ {c}</li>)}
-              </ul>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="section section-alt" id="programs">
-        <div className="container">
-          <p className="eyebrow center">What we offer</p>
-          <h2 className="center">Programs built around you</h2>
-          <div className="grid-4">
-            {SERVICES.map((s) => (
-              <div className="card service" key={s.title}>
-                <div className="service-icon">{s.icon}</div>
-                <h3>{s.title}</h3>
-                <p>{s.text}</p>
+      <main>
+        <section className="hero">
+          <div className="wrap">
+            <p className="label">{area}</p>
+            <div className="hero-grid">
+              <div className="hero-copy">
+                <h1 aria-label={name}>
+                  <span>Medilife</span>
+                  <span className="tone">Fitness</span>
+                  <span className="tone">Club</span>
+                </h1>
+                {site?.tagline_hi && <p className="hero-hi" lang="hi">{site.tagline_hi}</p>}
+                <p className="hero-note">{site?.tagline ? `${site.tagline} ` : ''}{site?.bio}</p>
+                <div className="hero-cta">
+                  <a href="#join" className="btn btn-lg">Book a free trial <span className="arr" aria-hidden="true">↗</span></a>
+                  {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn btn-lg btn-ghost">WhatsApp us <span className="arr" aria-hidden="true">→</span></a>}
+                </div>
+                {stats.length > 0 && (
+                  <div className="hero-meta">
+                    {stats.map((s) => <div key={s.l}><strong>{s.v}</strong><span>{s.l}</span></div>)}
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section" id="pricing">
-        <div className="container">
-          <p className="eyebrow center">Membership</p>
-          <h2 className="center">Simple, honest pricing</h2>
-          <div className="pricing">
-            {plans.data?.map((p, i) => (
-              <div className={`card price-card ${i === 2 ? 'featured' : ''}`} key={p.id}>
-                {i === 2 && <span className="ribbon">Popular</span>}
-                <h3>{p.name}</h3>
-                <div className="price">{money(p.price)}<span>/ {p.duration_days} days</span></div>
-                {p.description && <p className="muted">{p.description}</p>}
-                <ul>{p.features?.map((f) => <li key={f}>{f}</li>)}</ul>
-                <a href="#contact" className="btn btn-block" onClick={() => window.dispatchEvent(new CustomEvent('pick-plan', { detail: p.name }))}>Enquire</a>
+              <div className="arch">
+                {site?.hero_image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={site.hero_image_url} alt={`Inside ${name}`} />
+                ) : (
+                  <>
+                    <PulseBarbell className="mark" />
+                    <span className="arch-cap">Health · Strength · Life</span>
+                  </>
+                )}
               </div>
-            ))}
-          </div>
-          <p className="center muted small">Pay at the gym by cash or UPI. No hidden charges.</p>
-        </div>
-      </section>
-
-      <section className="section section-alt" id="results">
-        <div className="container">
-          <p className="eyebrow center">Real members, real results</p>
-          <h2 className="center">Transformations</h2>
-          <div className="grid-3">
-            {testimonials.data?.map((t) => (
-              <figure className="card testimonial" key={t.id}>
-                {t.result && <div className="result">{t.result}</div>}
-                <blockquote>“{t.text}”</blockquote>
-                <figcaption>— {t.name}</figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section" id="contact">
-        <div className="container two-col">
-          <div>
-            <p className="eyebrow">Get started</p>
-            <h2>Book your free trial session</h2>
-            <p className="lead">Leave your number and we’ll call you back within a day.</p>
-            <ul className="contact-list">
-              {site?.address && <li>📍 {site.address}</li>}
-              {site?.phone && <li>📞 <a href={`tel:${site.phone}`}>{site.phone}</a></li>}
-              {site?.email && <li>✉️ <a href={`mailto:${site.email}`}>{site.email}</a></li>}
-              {site?.hours && <li>🕒 {site.hours}</li>}
-            </ul>
-            <div className="social">
-              {site?.instagram && <a href={site.instagram} target="_blank" rel="noreferrer">Instagram</a>}
-              {site?.youtube && <a href={site.youtube} target="_blank" rel="noreferrer">YouTube</a>}
-              {site?.map_url && <a href={site.map_url} target="_blank" rel="noreferrer">Google Maps</a>}
             </div>
           </div>
-          <LeadForm planNames={plans.data?.map((p) => p.name) ?? []} />
-        </div>
-      </section>
+          <div className="marquee" aria-hidden="true">
+            <div className="marquee-track">
+              {[0, 1].map((k) => <span key={k}>{MARQUEE.map((m) => <span key={m + k}>{m}</span>)}</span>)}
+            </div>
+          </div>
+        </section>
+
+        <section className="section" id="offer">
+          <div className="wrap">
+            <div className="section-head reveal">
+              <div>
+                <p className="label">Training</p>
+                <h2>What we train <span className="tone">you for.</span></h2>
+              </div>
+              <p>Whatever brings you in, you leave with a plan you can follow, and a coach who checks you actually do.</p>
+            </div>
+            <div className="rows">
+              {OFFER.map((o) => (
+                <a href="#join" className="row reveal" key={o.title}>
+                  <h3>{o.title}</h3>
+                  <span className="circle" aria-hidden="true"><Icon.ArrowUpRight width={18} height={18} /></span>
+                  <p>{o.text}</p>
+                  <div className="chip-row">{o.chips.map((c) => <span className="mono-chip" key={c}>{c}</span>)}</div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {plans.length > 0 && (
+          <section className="section" id="plans" style={{ paddingTop: 0 }}>
+            <div className="wrap">
+              <div className="section-head reveal">
+                <div>
+                  <p className="label">Membership</p>
+                  <h2>Simple plans, <em>no</em> hidden fees.</h2>
+                </div>
+                <p>Pay at the desk by cash or UPI. Your plan, days left and receipts show up in the MFC app.</p>
+              </div>
+              <div className="plans" role="list">
+                {plans.map((p, i) => (
+                  <article className={`plan ${i === featured ? 'featured' : ''}`} key={p.id} role="listitem">
+                    <div className="plan-top">
+                      <span className="plan-name">{p.name}</span>
+                      {i === featured && <span className="ribbon">Popular</span>}
+                    </div>
+                    <div className="price">{money(p.price)}<small>/ {p.duration_days} days</small></div>
+                    {p.description && <p className="muted" style={{ margin: 0 }}>{p.description}</p>}
+                    <ul>{p.features?.map((f) => <li key={f}>{f}</li>)}</ul>
+                    <a href="#join" className="btn btn-block" onClick={() => window.dispatchEvent(new CustomEvent('pick-plan', { detail: p.name }))}>
+                      Choose {p.name} <span className="arr" aria-hidden="true">↗</span>
+                    </a>
+                  </article>
+                ))}
+              </div>
+              <p className="swipe-hint">← Swipe to compare plans →</p>
+            </div>
+          </section>
+        )}
+
+        <section className="section" id="app" style={{ paddingTop: 0 }}>
+          <div className="wrap app-promo">
+            <div className="reveal">
+              <p className="label">Member app</p>
+              <div className="section-head" style={{ display: 'block', marginBottom: 22 }}>
+                <h2>Your coach, <em>in your</em> pocket.</h2>
+              </div>
+              <ul className="feature-list">
+                <li><span><Icon.Dumbbell /></span><div><strong>Today’s workout</strong><span className="muted">Exercises, sets and reps for each day of the week.</span></div></li>
+                <li><span><Icon.Leaf /></span><div><strong>Your diet plan</strong><span className="muted">Meal times and portions, veg or non-veg.</span></div></li>
+                <li><span><Icon.Chart /></span><div><strong>Progress</strong><span className="muted">Log your weight and see the trend.</span></div></li>
+                <li><span><Icon.Receipt /></span><div><strong>Membership & payments</strong><span className="muted">Days left, dues and every receipt.</span></div></li>
+              </ul>
+              <Link href="/login" className="btn btn-lg">Member login <span className="arr" aria-hidden="true">↗</span></Link>
+              <InstallApp />
+            </div>
+            <div className="phone-mock reveal" aria-hidden="true">
+              <div className="phone-screen">
+                <div className="ps-head"><span>Hi Neha 👋</span><span className="brand-mark" style={{ width: 28, height: 28, fontSize: '0.55rem' }}>MFC</span></div>
+                <div className="ps-card">
+                  <div className="muted" style={{ fontSize: '0.68rem' }}>Quarterly membership</div>
+                  <b>62 days left</b>
+                  <div className="ps-meter"><span /></div>
+                </div>
+                <div className="ps-list">
+                  <div className="muted" style={{ background: 'none', border: 'none', padding: '2px 2px 0' }}>Monday · Push</div>
+                  <div><span>Bench press</span><i>4 × 10</i></div>
+                  <div><span>Shoulder press</span><i>3 × 10</i></div>
+                  <div><span>Lateral raises</span><i>3 × 15</i></div>
+                  <div><span>Rope pushdown</span><i>3 × 12</i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {testimonials.length > 0 && (
+          <section className="section dark" id="results">
+            <div className="wrap">
+              <div className="section-head reveal">
+                <div>
+                  <p className="label">Results</p>
+                  <h2>Real members, <em>real</em> <span className="tone">change.</span></h2>
+                </div>
+              </div>
+              <div className="quotes">
+                {testimonials.map((t) => (
+                  <figure className="quote-row reveal" key={t.id} style={{ margin: 0 }}>
+                    <blockquote>“{t.text}”</blockquote>
+                    <figcaption className="who"><span>{t.name}</span>{t.result && <b>{t.result}</b>}</figcaption>
+                  </figure>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {!!site?.gallery_urls?.length && (
+          <section className="section" style={{ paddingBottom: 0 }}>
+            <div className="wrap">
+              <p className="label">Inside the gym</p>
+              <div className="gallery">
+                {site.gallery_urls.slice(0, 5).map((u, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={u} src={u} alt={`${name} photo ${i + 1}`} loading="lazy" />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section className="section" id="visit">
+          <div className="wrap visit">
+            <div className="reveal">
+              <p className="label">Visit</p>
+              <div className="section-head" style={{ display: 'block', marginBottom: 22 }}>
+                <h2>Come train <em>with us.</em></h2>
+              </div>
+              <dl className="spec">
+                {site?.address && <div><dt>Address</dt><dd>{site.address}</dd></div>}
+                {site?.hours && <div><dt>Hours</dt><dd>{site.hours}</dd></div>}
+                {site?.phone && <div><dt>Phone</dt><dd><a href={`tel:${site.phone.replace(/\s/g, '')}`}>{site.phone}</a></dd></div>}
+                {site?.instagram && <div><dt>Instagram</dt><dd><a href={site.instagram} target="_blank" rel="noreferrer">@{site.instagram.replace(/\/+$/, '').split('/').pop()}</a></dd></div>}
+                {!!site?.certifications?.length && <div><dt>Coaches</dt><dd>{site.certifications.join(' · ')}</dd></div>}
+              </dl>
+              <div className="visit-actions">
+                {site?.map_url && <a className="btn btn-ghost" href={site.map_url} target="_blank" rel="noreferrer"><Icon.Pin width={18} height={18} /> Directions</a>}
+                {site?.phone && <a className="btn btn-ghost" href={`tel:${site.phone.replace(/\s/g, '')}`}><Icon.Phone width={18} height={18} /> Call</a>}
+              </div>
+            </div>
+            <div id="join" style={{ scrollMarginTop: 80 }}>
+              <LeadForm planNames={plans.map((p) => p.name)} />
+            </div>
+          </div>
+        </section>
+      </main>
 
       <footer className="site-footer">
-        <span>© {new Date().getFullYear()} {site?.gym_name}</span>
-        <Link href={portalLink}>Member login</Link>
+        <div className="wrap">
+          <div className="foot-grid">
+            <div>
+              <span className="brand" style={{ color: 'var(--on-maroon)' }}><span className="brand-mark" style={{ background: 'var(--gold)', color: 'var(--maroon)' }}>MFC</span>{name}</span>
+              <p style={{ marginTop: 12, opacity: 0.75, maxWidth: '36ch' }}>{site?.address}</p>
+            </div>
+            <div>
+              <h4>Explore</h4>
+              <ul><li><a href="#offer">Training</a></li><li><a href="#plans">Plans</a></li><li><a href="#app">Member app</a></li></ul>
+            </div>
+            <div>
+              <h4>Connect</h4>
+              <ul>
+                {site?.instagram && <li><a href={site.instagram} target="_blank" rel="noreferrer">Instagram ↗</a></li>}
+                {wa && <li><a href={wa} target="_blank" rel="noreferrer">WhatsApp ↗</a></li>}
+                {site?.map_url && <li><a href={site.map_url} target="_blank" rel="noreferrer">Google Maps ↗</a></li>}
+              </ul>
+            </div>
+            <div>
+              <h4>Members</h4>
+              <ul><li><Link href={portalLink}>Member login</Link></li><li><a href="#join">Free trial</a></li></ul>
+            </div>
+          </div>
+          <div className="wordmark" aria-hidden="true">Medilife</div>
+          <div className="foot-bottom">
+            <span>© {new Date().getFullYear()} {name}</span>
+            <span>Website by <a href="https://www.hvanetia.me/" target="_blank" rel="noreferrer">Harsh Vanetia ↗</a></span>
+          </div>
+        </div>
       </footer>
 
-      {wa && <a className="wa-float" href={wa} target="_blank" rel="noreferrer" aria-label="WhatsApp">💬</a>}
+      <nav className="tabbar" aria-label="Quick links">
+        <a href="#top"><Icon.Home /><span>Home</span></a>
+        <a href="#plans"><Icon.Tag /><span>Plans</span></a>
+        <a href="#join" className="join"><span><Icon.Bolt /></span><span>Join</span></a>
+        <a href="#visit"><Icon.Pin /><span>Visit</span></a>
+        <Link href={portalLink}><Icon.User /><span>{session ? 'My plan' : 'Login'}</span></Link>
+      </nav>
     </div>
   );
 }
@@ -177,7 +306,7 @@ function LeadForm({ planNames }: { planNames: string[] }) {
   async function submit(e: FormEvent) {
     e.preventDefault();
     if (!/^[0-9+\s-]{10,15}$/.test(form.phone)) {
-      setErr('Please enter a valid phone number');
+      setErr('Please enter a 10-digit mobile number.');
       setState('error');
       return;
     }
@@ -201,23 +330,27 @@ function LeadForm({ planNames }: { planNames: string[] }) {
   if (state === 'done')
     return (
       <div className="card lead-form done">
+        <p className="label" style={{ justifyContent: 'center' }}>Request sent</p>
         <h3>Thank you! 🙌</h3>
-        <p>We’ve received your details and will contact you shortly.</p>
+        <p className="muted">We’ll call you within a day to fix your free trial.</p>
       </div>
     );
 
   return (
     <form className="card lead-form" onSubmit={submit}>
-      <input required placeholder="Your name" value={form.name} onChange={set('name')} />
-      <input required placeholder="Phone number" inputMode="tel" value={form.phone} onChange={set('phone')} />
-      <input type="email" placeholder="Email (optional)" value={form.email} onChange={set('email')} />
-      <select value={form.interested_plan} onChange={set('interested_plan')}>
+      <p className="label" style={{ margin: 0 }}>Free trial</p>
+      <h3>Book your first session</h3>
+      <input id="lead-name" required placeholder="Your name" autoComplete="name" value={form.name} onChange={set('name')} />
+      <input id="lead-phone" required placeholder="Mobile number" inputMode="tel" autoComplete="tel" value={form.phone} onChange={set('phone')} />
+      <select id="lead-plan" value={form.interested_plan} onChange={set('interested_plan')} aria-label="Interested in">
         <option value="">Interested in…</option>
         {planNames.map((n) => <option key={n}>{n}</option>)}
       </select>
-      <textarea rows={3} placeholder="Your goal / preferred time (optional)" value={form.message} onChange={set('message')} />
+      <textarea id="lead-msg" rows={3} placeholder="Your goal or preferred time (optional)" value={form.message} onChange={set('message')} />
       {state === 'error' && <div className="error-box">{err}</div>}
-      <button className="btn btn-block" disabled={state === 'sending'}>{state === 'sending' ? 'Sending…' : 'Request a call back'}</button>
+      <button className="btn btn-lg btn-block" disabled={state === 'sending'}>
+        {state === 'sending' ? 'Sending…' : 'Request a call back'} <span className="arr" aria-hidden="true">↗</span>
+      </button>
     </form>
   );
 }

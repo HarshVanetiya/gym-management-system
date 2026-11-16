@@ -6,11 +6,13 @@ import { invalidateSite, useAsync } from '../../lib/hooks';
 import type { SiteSettings, Testimonial } from '../../lib/types';
 import { ErrorBox, Field, Loading } from '../../components/ui';
 
-type TextKey = Exclude<keyof SiteSettings, 'id' | 'years_experience' | 'clients_trained' | 'certifications'>;
+type TextKey = Exclude<keyof SiteSettings, 'id' | 'years_experience' | 'clients_trained' | 'certifications' | 'gallery_urls'>;
 const TEXT_FIELDS: [TextKey, string, string?][] = [
   ['gym_name', 'Gym name'],
   ['trainer_name', 'Trainer name'],
-  ['tagline', 'Headline on website'],
+  ['tagline', 'Short tagline'],
+  ['tagline_hi', 'Hindi tagline', 'Shown in Devanagari under the big name, e.g. स्वस्थ शरीर, सशक्त मन'],
+  ['hero_image_url', 'Main photo link', 'Paste a photo link (e.g. from Google Photos or the gym’s site). Leave empty to show the MFC artwork.'],
   ['phone', 'Phone'],
   ['whatsapp', 'WhatsApp number', 'With country code, digits only — e.g. 919876543210'],
   ['email', 'Email'],
@@ -27,6 +29,7 @@ export default function SiteEditor() {
   const tst = useAsync(() => store.list('testimonials', { order: ['created_at', 'desc'] }));
   const [f, setF] = useState<SiteSettings | null>(null);
   const [certs, setCerts] = useState('');
+  const [gallery, setGallery] = useState('');
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -34,6 +37,7 @@ export default function SiteEditor() {
     if (site.data) {
       setF(site.data);
       setCerts((site.data.certifications ?? []).join('\n'));
+      setGallery((site.data.gallery_urls ?? []).join('\n'));
     }
   }, [site.data]);
 
@@ -45,7 +49,7 @@ export default function SiteEditor() {
     try {
       const { id: _id, ...rest } = f!;
       void _id;
-      await store.update('site_settings', 1, { ...rest, certifications: certs.split('\n').map((c) => c.trim()).filter(Boolean) });
+      await store.update('site_settings', 1, { ...rest, certifications: certs.split('\n').map((c) => c.trim()).filter(Boolean), gallery_urls: gallery.split('\n').map((c) => c.trim()).filter(Boolean) });
       invalidateSite();
       setMsg('Saved. Your website is updated.');
       setTimeout(() => setMsg(null), 3000);
@@ -69,10 +73,11 @@ export default function SiteEditor() {
             <input value={(f[k] as string) ?? ''} onChange={(e) => setF({ ...f, [k]: e.target.value })} />
           </Field>
         ))}
-        <Field label="Years of experience"><input type="number" value={f.years_experience ?? 0} onChange={(e) => setF({ ...f, years_experience: Number(e.target.value) })} /></Field>
-        <Field label="Clients trained"><input type="number" value={f.clients_trained ?? 0} onChange={(e) => setF({ ...f, clients_trained: Number(e.target.value) })} /></Field>
+        <Field label="Years running" hint="0 hides it on the website"><input type="number" value={f.years_experience ?? 0} onChange={(e) => setF({ ...f, years_experience: Number(e.target.value) })} /></Field>
+        <Field label="Members trained" hint="0 hides it on the website"><input type="number" value={f.clients_trained ?? 0} onChange={(e) => setF({ ...f, clients_trained: Number(e.target.value) })} /></Field>
         <div className="span-2"><Field label="About / bio"><textarea rows={4} value={f.bio ?? ''} onChange={(e) => setF({ ...f, bio: e.target.value })} /></Field></div>
-        <div className="span-2"><Field label="Certifications (one per line)"><textarea rows={3} value={certs} onChange={(e) => setCerts(e.target.value)} /></Field></div>
+        <div className="span-2"><Field label="Gallery photo links (one per line, up to 5)" hint="Shown in an “Inside the gym” section. Leave empty to hide it."><textarea rows={3} value={gallery} onChange={(e) => setGallery(e.target.value)} /></Field></div>
+        <div className="span-2"><Field label="Coach certifications (one per line)"><textarea rows={3} value={certs} onChange={(e) => setCerts(e.target.value)} /></Field></div>
         <div className="span-2"><ErrorBox error={err} />{msg && <div className="info-box">{msg}</div>}</div>
         <div className="span-2 form-actions"><button className="btn">Save website</button></div>
       </form>

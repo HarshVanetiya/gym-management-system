@@ -106,7 +106,7 @@ function supabaseStore(sb: SupabaseClient): Store {
 // ---------------------------------------------------------------------------
 // Demo implementation — everything lives in localStorage of this browser.
 // ---------------------------------------------------------------------------
-const DEMO_KEY = 'gym-demo-db-v1';
+const DEMO_KEY = 'mfc-demo-db-v2';
 const DEMO_SESSION_KEY = 'gym-demo-session';
 export const DEMO_ADMIN_EMAIL = 'trainer@demo.in';
 

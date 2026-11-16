@@ -4,12 +4,11 @@ import { useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { DEMO_ADMIN_EMAIL, store } from '../lib/store';
-import { useAuth, useSite } from '../lib/hooks';
+import { useAuth } from '../lib/hooks';
 import { DemoBanner } from '../components/DemoBanner';
 
 export default function Login() {
   const { session, refresh } = useAuth();
-  const { data: site } = useSite();
   const router = useRouter();
   const [mode, setMode] = useState<'in' | 'up'>('in');
   const [email, setEmail] = useState('');
@@ -59,7 +58,7 @@ export default function Login() {
     <div className="auth-page">
       <DemoBanner />
       <div className="auth-wrap">
-        <Link href="/" className="brand auth-brand"><span className="brand-mark">IF</span>{site?.gym_name ?? 'Gym'}</Link>
+        <Link href="/" className="brand auth-brand"><span className="brand-mark">MFC</span><span>Medilife<small>Fitness Club</small></span></Link>
         <form className="card auth-card" onSubmit={submit}>
           <h2>{mode === 'in' ? 'Log in' : 'Create your account'}</h2>
           <p className="muted small">

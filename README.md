@@ -1,4 +1,6 @@
-# Gym Management System
+# Medilife Fitness Club — website, member app & gym manager
+
+Built for **Medilife Fitness Club (MFC), Kashipuri Colony, Udaipur**. Designed mobile-first and installable as an app (PWA).
 
 A complete web system for a personal trainer / small gym, built with **Next.js (React) + Supabase**.
 The public website is rendered on the server, so search engines see the full page and the gym shows up as a local business (structured data).
@@ -60,6 +62,17 @@ Next.js needs a host that runs a small server (for the server-rendered home page
 - **Any VPS:** `npm run build && npm start` (port 3000) behind Nginx/Caddy.
 
 > Vercel is the company behind Next.js, but its free Hobby plan is for non-commercial use only, so a business site there needs Vercel Pro ($20/month).
+
+## Install as an app (PWA)
+
+The site is a Progressive Web App:
+- **Android / Chrome:** an **Install** button appears on the website, in the member app and in the trainer's "More" menu.
+- **iPhone:** Safari → Share → **Add to Home Screen** (the button shows these steps).
+- The installed app opens on **My plan** (`/me`); trainers are sent to their dashboard after login.
+- Works on a weak connection: pages and fonts are cached by `public/sw.js`; member data is always fetched live.
+
+Before launch, fill in the real details under **Dashboard → Website**: phone, WhatsApp, hours, plan prices,
+a main photo and gallery photos (paste photo links), and real member reviews. Fields left empty are hidden on the site.
 
 ## Reliability extras (recommended)
 

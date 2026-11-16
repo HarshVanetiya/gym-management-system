@@ -10,9 +10,11 @@ import { DietView, WorkoutView } from '../../components/ProgramViews';
 import { ProgressPanel } from '../../components/ProgressPanel';
 import { AttendanceStrip } from '../admin/MemberDetail';
 import { DemoBanner } from '../../components/DemoBanner';
+import { Icon } from '../../components/icons';
+import { InstallApp } from '../../components/Pwa';
 
 type Tab = 'workout' | 'diet' | 'progress' | 'payments';
-const TAB_ICON: Record<Tab, string> = { workout: '🏋️', diet: '🥗', progress: '📈', payments: '🧾' };
+const TAB_ICON: Record<Tab, typeof Icon.Dumbbell> = { workout: Icon.Dumbbell, diet: Icon.Leaf, progress: Icon.Chart, payments: Icon.Receipt };
 const TAB_LABEL: Record<Tab, string> = { workout: 'Workout', diet: 'Diet', progress: 'Progress', payments: 'Payments' };
 
 export default function MemberPortal() {
@@ -43,7 +45,7 @@ export default function MemberPortal() {
 
   const header = (
     <header className="portal-head">
-      <div className="brand"><span className="brand-mark">IF</span>{site?.gym_name}</div>
+      <div className="brand"><span className="brand-mark">MFC</span><span>Medilife<small>Member</small></span></div>
       <button className="link-btn" onClick={logout}>Log out</button>
     </header>
   );
@@ -112,7 +114,7 @@ export default function MemberPortal() {
         <nav className="portal-tabs" role="tablist">
           {(['workout', 'diet', 'progress', 'payments'] as Tab[]).map((t) => (
             <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>
-              <span aria-hidden="true">{TAB_ICON[t]}</span>
+              {(() => { const I = TAB_ICON[t]; return <I />; })()}
               <span>{TAB_LABEL[t]}</span>
             </button>
           ))}
@@ -155,6 +157,7 @@ export default function MemberPortal() {
             </>
           )}
         </section>
+        <InstallApp compact />
       </div>
     </div>
   );

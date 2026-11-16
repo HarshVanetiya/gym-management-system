@@ -1,17 +1,21 @@
 -- Optional starter content. Run after schema.sql. Safe to edit before running.
 update public.site_settings set
-  gym_name = 'Iron Forge Fitness',
-  trainer_name = 'Coach Vikram',
-  tagline = 'Stronger every week. Real coaching, real results.',
-  bio = 'Certified strength & conditioning coach helping people lose fat, build muscle and get stronger with practical plans.',
+  gym_name = 'Medilife Fitness Club',
+  trainer_name = 'MFC Coaches',
+  tagline = 'Train smart. Live strong.',
+  tagline_hi = 'स्वस्थ शरीर, सशक्त मन',
+  bio = 'A neighbourhood gym in Kashipuri Colony, Udaipur. Every member gets a workout and diet plan in the MFC app.',
   phone = '+91 98765 43210',
   whatsapp = '919876543210',
   email = 'hello@example.com',
-  address = 'Your gym address',
+  address = 'Kashipuri Colony, Udaipur, Rajasthan',
+  map_url = 'https://www.google.com/maps/search/?api=1&query=Medilife+Fitness+Club+Kashipuri+Colony+Udaipur',
+  instagram = 'https://www.instagram.com/mfc_fitnessclub2024/',
   hours = 'Mon–Sat 5:30 AM – 10 PM · Sun 7 AM – 12 PM',
-  years_experience = 8,
-  clients_trained = 450,
-  certifications = array['ACE Certified Personal Trainer', 'Sports Nutrition Specialist'],
+  -- Fill these with real numbers only (left at 0 they are hidden on the website)
+  years_experience = 0,
+  clients_trained = 0,
+  certifications = array[]::text[],
   upi_id = 'yourname@upi'
 where id = 1;
 
@@ -41,5 +45,4 @@ insert into public.diet_plans (name, description, calories, meals) values
     {"time":"9:00 PM","name":"Dinner","items":"Soya chunks curry, 1 roti, vegetables"}
   ]');
 
-insert into public.testimonials (name, text, result) values
-  ('Rohit K.', 'Lost 14 kg in 5 months without giving up home food.', '−14 kg in 5 months');
+-- Testimonials: add real member reviews from the dashboard (Website → Testimonials).

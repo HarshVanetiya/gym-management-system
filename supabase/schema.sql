@@ -39,6 +39,10 @@ create table if not exists public.site_settings (
   upi_id           text,             -- shown to members for offline UPI payment
   updated_at       timestamptz not null default now()
 );
+-- Added for the Medilife design (safe to re-run on an existing database)
+alter table public.site_settings add column if not exists tagline_hi     text;          -- Hindi tagline shown under the hero
+alter table public.site_settings add column if not exists hero_image_url text;          -- photo inside the hero arch
+alter table public.site_settings add column if not exists gallery_urls   text[] default '{}';
 insert into public.site_settings (id) values (1) on conflict do nothing;
 
 create table if not exists public.plans (
