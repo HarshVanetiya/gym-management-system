@@ -2,7 +2,7 @@
    Layout: mobile-first. Phones get a top bar + bottom tab bar; ≥768px adds the floating pill nav and wider grids.
    Two palettes:
    - Website (default): black, prussian blue, orange, alabaster grey, white.
-   - Dashboards (.app trainer dashboard, .portal member app, .auth-page login): the blue scale
+   - Dashboards (.app trainer dashboard, .portal member app): the blue scale. Login uses the website palette.
      deep twilight → light cyan. Both have light and dark versions.
    Type: Manrope display + Inter body + JetBrains Mono labels (Tech Studio), Cormorant Garamond italic accents (RJ Studio). */
 :root {
@@ -79,7 +79,7 @@
 }
 
 /* dashboards (trainer dashboard, member app, login), light */
-.app, .portal, .auth-page {
+.app, .portal {
   --bg: #f4fcfe; --surface: var(--white); --surface-2: #e4f7fb; --text: var(--deep-twilight); --ink: var(--deep-twilight);
   --ink-2: var(--french-blue); --muted: #46658a; --border: var(--frosted-blue-2); --accent: var(--bright-teal-blue);
   --accent-ink: var(--white); --accent-soft: var(--light-cyan); --deep: var(--french-blue); --deep-2: var(--bright-teal-blue);
@@ -89,7 +89,7 @@
 }
 /* dashboards, dark */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) :is(.app, .portal, .auth-page) {
+  :root:not([data-theme='light']) :is(.app, .portal) {
     --bg: #01023a; --surface: var(--deep-twilight); --surface-2: #05207a; --text: var(--light-cyan); --ink: var(--light-cyan);
     --ink-2: var(--frosted-blue); --muted: #86bfd6; --border: #0c2c86; --accent: var(--sky-aqua); --accent-ink: var(--deep-twilight);
     --accent-soft: #062a7c; --deep: var(--french-blue); --deep-2: var(--bright-teal-blue); --on-deep: var(--white);
@@ -97,7 +97,7 @@
     --shadow: 0 0 0 1px #0c2c86; color-scheme: dark;
   }
 }
-:root[data-theme='dark'] :is(.app, .portal, .auth-page) {
+:root[data-theme='dark'] :is(.app, .portal) {
   --bg: #01023a; --surface: var(--deep-twilight); --surface-2: #05207a; --text: var(--light-cyan); --ink: var(--light-cyan);
   --ink-2: var(--frosted-blue); --muted: #86bfd6; --border: #0c2c86; --accent: var(--sky-aqua); --accent-ink: var(--deep-twilight);
   --accent-soft: #062a7c; --deep: var(--french-blue); --deep-2: var(--bright-teal-blue); --on-deep: var(--white);
