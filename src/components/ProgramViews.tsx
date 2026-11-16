@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import type { DietPlan, WorkoutPlan } from '../lib/types';
 import { todayWeekDay, WEEK_DAYS } from '../lib/utils';

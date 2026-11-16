@@ -1,4 +1,8 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+'use client';
+
+import type { ReactNode } from 'react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { store } from '../../lib/store';
 import { useAuth, useSite } from '../../lib/hooks';
 import { DemoBanner } from '../../components/DemoBanner';
@@ -13,15 +17,17 @@ const LINKS = [
   { to: '/admin/site', label: 'Website', icon: '🌐' },
 ];
 
-export default function AdminLayout() {
+export default function AdminLayout({ children }: { children: ReactNode }) {
   const { session, refresh } = useAuth();
   const { data: site } = useSite();
-  const nav = useNavigate();
+  const router = useRouter();
+  const pathname = usePathname();
   async function logout() {
     await store.auth.signOut();
     await refresh();
-    nav('/login');
+    router.push('/login');
   }
+  const isActive = (to: string, end?: boolean) => (end ? pathname === to : pathname === to || pathname.startsWith(to + '/'));
   return (
     <div className="app">
       <DemoBanner />
@@ -30,9 +36,9 @@ export default function AdminLayout() {
           <div className="brand sidebar-brand"><span className="brand-mark">IF</span><span>{site?.gym_name ?? 'Gym'}</span></div>
           <nav>
             {LINKS.map((l) => (
-              <NavLink key={l.to} to={l.to} end={l.end} className={({ isActive }) => (isActive ? 'active' : '')}>
+              <Link key={l.to} href={l.to} className={isActive(l.to, l.end) ? 'active' : ''}>
                 <span aria-hidden="true">{l.icon}</span> {l.label}
-              </NavLink>
+              </Link>
             ))}
           </nav>
           <div className="sidebar-foot">
@@ -41,9 +47,7 @@ export default function AdminLayout() {
             <button className="link-btn" onClick={logout}>Log out</button>
           </div>
         </aside>
-        <main className="main">
-          <Outlet />
-        </main>
+        <main className="main">{children}</main>
       </div>
     </div>
   );

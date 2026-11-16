@@ -1,5 +1,8 @@
+'use client';
+
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
 import { store } from '../../lib/store';
 import { useAsync, useSite } from '../../lib/hooks';
 import type { Member, Plan, PaymentMethod, Subscription } from '../../lib/types';
@@ -9,8 +12,9 @@ import { MemberForm, METHODS } from './MemberForm';
 import { ProgressPanel } from '../../components/ProgressPanel';
 
 export default function MemberDetail() {
-  const { id = '' } = useParams();
-  const nav = useNavigate();
+  const { id = '' } = useParams<{ id: string }>();
+  const router = useRouter();
+  const nav = (path: string) => router.push(path);
   const { data: site } = useSite();
   const { data, error, loading, reload } = useAsync(async () => {
     const [member, subs, payments, attendance, plans, workouts, diets] = await Promise.all([
@@ -28,7 +32,7 @@ export default function MemberDetail() {
 
   if (loading && !data) return <Loading />;
   if (error) return <ErrorBox error={error} />;
-  if (!data?.member) return <Empty>Member not found. <Link to="/admin/members">Back</Link></Empty>;
+  if (!data?.member) return <Empty>Member not found. <Link href="/admin/members">Back</Link></Empty>;
 
   const m = data.member;
   const s = summarize(m, data.subs, data.payments);
@@ -58,7 +62,7 @@ export default function MemberDetail() {
 
   return (
     <div>
-      <Link to="/admin/members" className="muted small">← All members</Link>
+      <Link href="/admin/members" className="muted small">← All members</Link>
       <div className="page-head">
         <div>
           <h1>{m.full_name} <StatusBadge status={s.status} /></h1>
@@ -129,11 +133,11 @@ export default function MemberDetail() {
               {data.diets.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
           </Field>
-          <p className="muted small">Members see the assigned plans in their app. Edit templates under <Link to="/admin/programs">Workouts & Diets</Link>.</p>
+          <p className="muted small">Members see the assigned plans in their app. Edit templates under <Link href="/admin/programs">Workouts & Diets</Link>.</p>
           <div className="login-status">
             {m.user_id ? <span className="badge badge-active">App login linked</span> : (
               <span className="muted small">
-                No app login yet. Ask {m.full_name.split(' ')[0]} to sign up at <strong>{window.location.origin}/login</strong> using <strong>{m.email ?? '(add an email first)'}</strong>.
+                No app login yet. Ask {m.full_name.split(' ')[0]} to sign up at <strong>{typeof window === 'undefined' ? '' : window.location.origin}/login</strong> using <strong>{m.email ?? '(add an email first)'}</strong>.
               </span>
             )}
           </div>

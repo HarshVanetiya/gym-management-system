@@ -30,12 +30,12 @@ A single gym has roughly 100–300 members. One year of daily attendance for 300
 
 ## 3. Hosting options and running cost
 
-### Option A: Supabase Free + Cloudflare Pages *(this demo, recommended to start)*
+### Option A: Supabase Free + Netlify Free *(this demo, recommended to start)*
 
 | Item | Cost |
 |---|---|
 | Supabase Free (database + login) | ₹0 |
-| Cloudflare Pages (website hosting; commercial use is OK on the free plan) | ₹0 |
+| Netlify Free (runs the Next.js site; commercial use allowed; 300 credits/month hard cap). Cloudflare Workers via OpenNext is a free alternative | ₹0 |
 | Domain `.in` (renewal ≈ ₹899/yr at Hostinger) or `.com` (≈ ₹1,499/yr) | ₹900–1,500 / yr |
 | Daily backup via GitHub Actions (included `.github/workflows/db-backup.yml`) | ₹0 |
 | **Total** | **≈ ₹900–1,500 per year** (≈ ₹75–125/month) |
@@ -46,7 +46,7 @@ A single gym has roughly 100–300 members. One year of daily attendance for 300
 - **Free projects pause after 7 days with no activity.** A gym uses the app daily, and the nightly backup job also counts as activity, so this is unlikely to bite. If it does, one click resumes the project.
 - **No downloadable backups on Free.** The included GitHub Actions workflow fixes this with a nightly `pg_dump`.
 - **India access problem.** This is probably why your login sometimes fails. From **February 2026** several Indian ISPs (Jio, Airtel, ACT) blocked `*.supabase.co`. Reports say the block was through a government order or a DNS sinkhole. Access was later reported restored. Fixes:
-  1. Put a **Cloudflare Worker proxy on your own domain** in front of Supabase (free tier: 100k requests/day), and set `VITE_SUPABASE_URL` to that domain. Members never touch `supabase.co` directly.
+  1. Put a **Cloudflare Worker proxy on your own domain** in front of Supabase (free tier: 100k requests/day), and set `NEXT_PUBLIC_SUPABASE_URL` to that domain. Members never touch `supabase.co` directly.
   2. Or use Supabase's **Custom Domain add-on ($10/month, ≈ ₹900)**, which needs a paid plan.
   3. A quick personal workaround is DNS 1.1.1.1 or a VPN. That's fine for you, but it isn't realistic for gym members.
 - **Built-in auth emails have a very low hourly limit.** Plug in a free SMTP provider (Brevo, Resend and similar have free tiers) before launch.
@@ -106,7 +106,7 @@ A single gym has roughly 100–300 members. One year of daily attendance for 300
 
 | Option | ~Yearly cost | Effort for you | Reliability | Recommended for |
 |---|---|---|---|---|
-| A. Supabase Free + CF Pages | **₹900–1,500** | Low | Good, with proxy + backup | **Start here** |
+| A. Supabase Free + Netlify Free | **₹900–1,500** | Low | Good, with proxy + backup | **Start here** |
 | B. Supabase Pro | ₹28k–45k | Low | Very good | Multi-branch / bigger gym |
 | C. Firebase | ₹0–1,200 | Medium (rewrite data layer) | Very good | If Supabase keeps failing in India |
 | D. VPS + PocketBase | ₹8k–13.5k | **High (ongoing)** | Depends on you | Only if you enjoy ops |
@@ -135,7 +135,7 @@ A single gym has roughly 100–300 members. One year of daily attendance for 300
 | **Installable app (PWA) + push notifications** | Looks like a real app on the phone, with no Play Store fee | iOS push needs the app added to the home screen | All (front-end only) |
 | **Class / PT slot booking** | Fewer WhatsApp back-and-forths | More UI work. No-show handling | All |
 | **GST invoices / PDF receipts** | Professional, and needed if the gym is GST-registered | Invoice numbering rules | All |
-| **SEO + Google Business Profile** | Biggest source of "natural audience" for a local gym. GBP is free | Content work (photos, posts, reviews). For best SEO, pre-render the home page | All |
+| **SEO + Google Business Profile** | Biggest source of "natural audience" for a local gym. GBP is free | Content work (photos, posts, reviews). The Next.js version already server-renders the home page and adds local-business structured data | All |
 | **Instagram feed / reels on website** | Social proof, fresh content | Embeds slow down the page | All |
 | **Multiple trainers / staff roles** | Scales to a team | More permission rules | All (extra `role` values) |
 
@@ -150,6 +150,8 @@ A single gym has roughly 100–300 members. One year of daily attendance for 300
 - Firebase: [firebase.google.com/pricing](https://firebase.google.com/pricing), [Activepieces guide](https://www.activepieces.com/blog/firebase-pricing-2026-plans-costs-and-free-limits.md)
 - Appwrite (pauses idle free projects; deletes after 90 days): [changelog](https://appwrite.io/changelog/entry/2026-06-29)
 - Vercel Hobby is non-commercial: [vercel.com/docs/plans/hobby](https://vercel.com/docs/plans/hobby)
+- Netlify free plan & credits: [netli.fyi](https://netli.fyi/blog/netlify-pricing-and-limits), [Hostfleet comparison](https://hostfleet.pages.dev/cf-pages-vs-vercel-vs-netlify-2026/)
+- Next.js on Cloudflare (OpenNext): [opennext.js.org/cloudflare](https://opennext.js.org/cloudflare)
 - Cloudflare Pages limits: [developers.cloudflare.com/pages/platform/limits](https://developers.cloudflare.com/pages/platform/limits)
 - Hostinger VPS India: [hostinger.com/in/vps-hosting](https://hostinger.com/in/vps-hosting), [renewal pricing](https://hostadvice.com/hosting-company/hostinger-reviews/hostinger-india-pricing/)
 - Domains: [Hostinger domain prices India](https://zoutons.com/news/hostinger-domain-price-india-2026)

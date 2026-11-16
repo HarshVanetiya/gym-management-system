@@ -1,5 +1,7 @@
+'use client';
+
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { store } from '../../lib/store';
 import { useAsync, useSite } from '../../lib/hooks';
 import type { Lead, LeadStatus } from '../../lib/types';
@@ -12,7 +14,8 @@ export default function Leads() {
   const { data, error, loading, reload } = useAsync(() => store.list('leads', { order: ['created_at', 'desc'] }));
   const { data: site } = useSite();
   const [filter, setFilter] = useState<LeadStatus | 'all'>('all');
-  const nav = useNavigate();
+  const router = useRouter();
+  const nav = (path: string) => router.push(path);
 
   async function setStatus(l: Lead, status: LeadStatus) {
     await store.update('leads', l.id, { status });

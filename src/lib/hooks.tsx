@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { store } from './store';
 import type { AppSession, SiteSettings } from './types';

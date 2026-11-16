@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, type ReactNode } from 'react';
 import { STATUS_LABEL, type MemberStatus } from '../lib/utils';
 

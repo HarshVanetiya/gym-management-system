@@ -1,5 +1,8 @@
+'use client';
+
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { DEMO_ADMIN_EMAIL, store } from '../lib/store';
 import { useAuth, useSite } from '../lib/hooks';
 import { DemoBanner } from '../components/DemoBanner';
@@ -7,7 +10,7 @@ import { DemoBanner } from '../components/DemoBanner';
 export default function Login() {
   const { session, refresh } = useAuth();
   const { data: site } = useSite();
-  const nav = useNavigate();
+  const router = useRouter();
   const [mode, setMode] = useState<'in' | 'up'>('in');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,8 +18,8 @@ export default function Login() {
   const [msg, setMsg] = useState<{ kind: 'error' | 'info'; text: string } | null>(null);
 
   useEffect(() => {
-    if (session) nav(session.role === 'admin' ? '/admin' : '/me', { replace: true });
-  }, [session, nav]);
+    if (session) router.replace(session.role === 'admin' ? '/admin' : '/me');
+  }, [session, router]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -56,7 +59,7 @@ export default function Login() {
     <div className="auth-page">
       <DemoBanner />
       <div className="auth-wrap">
-        <Link to="/" className="brand auth-brand"><span className="brand-mark">IF</span>{site?.gym_name ?? 'Gym'}</Link>
+        <Link href="/" className="brand auth-brand"><span className="brand-mark">IF</span>{site?.gym_name ?? 'Gym'}</Link>
         <form className="card auth-card" onSubmit={submit}>
           <h2>{mode === 'in' ? 'Log in' : 'Create your account'}</h2>
           <p className="muted small">

@@ -1,3 +1,5 @@
+'use client';
+
 import { store } from '../lib/store';
 
 export function DemoBanner() {

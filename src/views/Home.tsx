@@ -1,7 +1,10 @@
-import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+'use client';
+
+import { useEffect, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { store } from '../lib/store';
-import { useAsync, useAuth, useSite } from '../lib/hooks';
+import { useAsync, useAuth } from '../lib/hooks';
+import { loadPublicData, type PublicData } from '../lib/public-data';
 import { money, whatsappLink } from '../lib/utils';
 import { DemoBanner } from '../components/DemoBanner';
 
@@ -12,11 +15,14 @@ const SERVICES = [
   { icon: '📱', title: 'Member App', text: 'Check today’s workout, your diet, membership expiry and progress from your phone.' },
 ];
 
-export default function Home() {
-  const { data: site } = useSite();
+/** `initial` is rendered on the server when Supabase is configured; in demo mode data loads in the browser. */
+export default function Home({ initial }: { initial: PublicData | null }) {
   const { session } = useAuth();
-  const plans = useAsync(() => store.list('plans', { eq: { is_active: true }, order: ['sort_order', 'asc'] }));
-  const testimonials = useAsync(() => store.list('testimonials', { eq: { is_published: true } }));
+  const loaded = useAsync(async () => initial ?? loadPublicData(store), []);
+  const pub = loaded.data ?? initial;
+  const site = pub?.site;
+  const plans = { data: pub?.plans };
+  const testimonials = { data: pub?.testimonials };
   const [menuOpen, setMenuOpen] = useState(false);
 
   const wa = whatsappLink(site?.whatsapp, `Hi ${site?.trainer_name ?? ''}, I found your website and want to know more about joining.`);
@@ -34,7 +40,7 @@ export default function Home() {
           <a href="#pricing">Pricing</a>
           <a href="#results">Results</a>
           <a href="#contact">Contact</a>
-          <Link to={portalLink} className="btn btn-sm">{session ? 'My Dashboard' : 'Member Login'}</Link>
+          <Link href={portalLink} className="btn btn-sm">{session ? 'My Dashboard' : 'Member Login'}</Link>
         </nav>
       </header>
 
@@ -101,7 +107,7 @@ export default function Home() {
                 <div className="price">{money(p.price)}<span>/ {p.duration_days} days</span></div>
                 {p.description && <p className="muted">{p.description}</p>}
                 <ul>{p.features?.map((f) => <li key={f}>{f}</li>)}</ul>
-                <a href="#contact" className="btn btn-block" onClick={() => sessionStorage.setItem('plan', p.name)}>Enquire</a>
+                <a href="#contact" className="btn btn-block" onClick={() => window.dispatchEvent(new CustomEvent('pick-plan', { detail: p.name }))}>Enquire</a>
               </div>
             ))}
           </div>
@@ -149,7 +155,7 @@ export default function Home() {
 
       <footer className="site-footer">
         <span>© {new Date().getFullYear()} {site?.gym_name}</span>
-        <Link to={portalLink}>Member login</Link>
+        <Link href={portalLink}>Member login</Link>
       </footer>
 
       {wa && <a className="wa-float" href={wa} target="_blank" rel="noreferrer" aria-label="WhatsApp">💬</a>}
@@ -158,8 +164,13 @@ export default function Home() {
 }
 
 function LeadForm({ planNames }: { planNames: string[] }) {
-  const [form, setForm] = useState({ name: '', phone: '', email: '', message: '', interested_plan: sessionStorage.getItem('plan') ?? '' });
+  const [form, setForm] = useState({ name: '', phone: '', email: '', message: '', interested_plan: '' });
   const [state, setState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
+  useEffect(() => {
+    const onPick = (e: Event) => setForm((f) => ({ ...f, interested_plan: (e as CustomEvent<string>).detail }));
+    window.addEventListener('pick-plan', onPick);
+    return () => window.removeEventListener('pick-plan', onPick);
+  }, []);
   const [err, setErr] = useState('');
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value });
 

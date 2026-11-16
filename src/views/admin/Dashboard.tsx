@@ -1,5 +1,7 @@
+'use client';
+
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { store } from '../../lib/store';
 import { useAsync } from '../../lib/hooks';
 import { useGymData } from '../../lib/gym';
@@ -43,7 +45,7 @@ export default function Dashboard() {
           <h1>Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'} 👋</h1>
           <p className="muted">{fmtDate(today)} · here’s what needs your attention</p>
         </div>
-        <Link to="/admin/members?new=1" className="btn">+ Add member</Link>
+        <Link href="/admin/members?new=1" className="btn">+ Add member</Link>
       </div>
 
       <div className="stats">
@@ -52,7 +54,7 @@ export default function Dashboard() {
         <StatCard label="Pending dues" value={money(stats.dues.reduce((t, x) => t + x.due, 0))} tone="danger" sub={`${stats.dues.length} members`} />
         <StatCard label="Collected this month" value={money(stats.collected)} tone="good" />
         <StatCard label="Checked in today" value={checkedIn.size} />
-        <StatCard label="New enquiries" value={<Link to="/admin/leads">{extra.data?.leads.length ?? 0}</Link>} />
+        <StatCard label="New enquiries" value={<Link href="/admin/leads">{extra.data?.leads.length ?? 0}</Link>} />
       </div>
 
       <div className="grid-2">
@@ -83,7 +85,7 @@ function ReminderList({ rows, gym, upi, empty, showDue }: { rows: MemberSummary[
         return (
           <li key={s.member.id}>
             <div>
-              <Link to={`/admin/members/${s.member.id}`} className="strong">{s.member.full_name}</Link>
+              <Link href={`/admin/members/${s.member.id}`} className="strong">{s.member.full_name}</Link>
               <div className="muted small">
                 {showDue ? `Due ${money(s.due)}` : s.latest ? `${s.latest.plan_name} · ends ${fmtDate(s.latest.end_date)}` : ''}
               </div>

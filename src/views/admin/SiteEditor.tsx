@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState, type FormEvent } from 'react';
 import { store } from '../../lib/store';
 import { invalidateSite, useAsync } from '../../lib/hooks';

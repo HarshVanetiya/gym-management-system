@@ -1,5 +1,8 @@
+'use client';
+
 import { useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useGymData } from '../../lib/gym';
 import { ErrorBox, Loading, StatusBadge, Empty } from '../../components/ui';
 import { downloadFile, fmtDate, isoDate, money, toCsv, type MemberStatus } from '../../lib/utils';
@@ -10,10 +13,12 @@ const FILTER_LABEL: Record<string, string> = { all: 'All', active: 'Active', exp
 
 export default function Members() {
   const { data, error, loading } = useGymData();
-  const [params, setParams] = useSearchParams();
+  const params = useSearchParams();
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>('all');
-  const nav = useNavigate();
+  const router = useRouter();
+  const nav = (path: string) => router.push(path);
+  const setParams = (p: { new?: string }) => router.replace(p.new ? '/admin/members?new=1' : '/admin/members');
   const showNew = params.get('new') === '1';
 
   const rows = useMemo(() => {
@@ -71,7 +76,7 @@ export default function Members() {
             <tbody>
               {rows.map((s) => (
                 <tr key={s.member.id} onClick={() => nav(`/admin/members/${s.member.id}`)} className="clickable">
-                  <td data-label="Name"><Link to={`/admin/members/${s.member.id}`} className="strong">{s.member.full_name}</Link>{s.member.user_id && <span className="tag" title="Has app login">app</span>}</td>
+                  <td data-label="Name"><Link href={`/admin/members/${s.member.id}`} className="strong">{s.member.full_name}</Link>{s.member.user_id && <span className="tag" title="Has app login">app</span>}</td>
                   <td data-label="Phone">{s.member.phone ?? '—'}</td>
                   <td data-label="Plan">{s.latest?.plan_name ?? '—'}</td>
                   <td data-label="Ends">{fmtDate(s.latest?.end_date)}</td>

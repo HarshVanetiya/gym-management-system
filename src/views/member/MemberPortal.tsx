@@ -1,5 +1,7 @@
+'use client';
+
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { store } from '../../lib/store';
 import { useAsync, useAuth, useSite } from '../../lib/hooks';
 import { addDays, daysBetween, fmtDate, isoDate, money, summarize, whatsappLink } from '../../lib/utils';
@@ -14,7 +16,8 @@ type Tab = 'workout' | 'diet' | 'progress' | 'payments';
 export default function MemberPortal() {
   const { session, refresh } = useAuth();
   const { data: site } = useSite();
-  const nav = useNavigate();
+  const router = useRouter();
+  const nav = (path: string) => router.push(path);
   const [tab, setTab] = useState<Tab>('workout');
 
   const { data, error, loading } = useAsync(async () => {

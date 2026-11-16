@@ -1,5 +1,7 @@
+'use client';
+
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useGymData } from '../../lib/gym';
 import { Empty, ErrorBox, Loading, StatCard } from '../../components/ui';
 import { downloadFile, fmtDate, isoDate, money, toCsv } from '../../lib/utils';
@@ -68,7 +70,7 @@ export default function Payments() {
               {view.rows.map((p) => (
                 <tr key={p.id}>
                   <td data-label="Date">{fmtDate(p.paid_on)}</td>
-                  <td data-label="Member"><Link to={`/admin/members/${p.member_id}`}>{p.name}</Link></td>
+                  <td data-label="Member"><Link href={`/admin/members/${p.member_id}`}>{p.name}</Link></td>
                   <td data-label="Method"><span className="tag">{p.method}</span></td>
                   <td data-label="Note">{p.note ?? ''}</td>
                   <td data-label="Amount" className="num strong">{money(p.amount)}</td>
