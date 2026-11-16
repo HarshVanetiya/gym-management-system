@@ -7,14 +7,20 @@ import { useAsync, useAuth } from '../lib/hooks';
 import { loadPublicData, type PublicData } from '../lib/public-data';
 import { money, whatsappLink } from '../lib/utils';
 import { DemoBanner } from '../components/DemoBanner';
-import { Icon, PulseBarbell } from '../components/icons';
+import { Icon } from '../components/icons';
 import { InstallApp } from '../components/Pwa';
+import { ThemeToggle } from '../components/ThemeToggle';
 
-const OFFER = [
-  { title: 'Strength training', text: 'Free weights, machines and proper form coaching, so you get stronger week after week.', chips: ['Free weights', 'Machines', 'Form checks'] },
-  { title: 'Fat loss', text: 'Structured workouts plus a diet built on everyday Rajasthani and Indian food.', chips: ['Cardio', 'Diet plan', 'Weekly check-ins'] },
-  { title: 'Personal training', text: 'One-on-one sessions with a plan written for your body, schedule and goals.', chips: ['1-on-1', 'Custom plan', 'Progress tracking'] },
-  { title: 'Member app', text: 'Today’s workout, your diet, membership days left and payments, on your phone.', chips: ['Workout', 'Diet', 'Progress'] },
+const TRAINING = [
+  { icon: Icon.Dumbbell, title: 'Strength training', text: 'Free weights, machines and form coaching, so you get stronger week after week.', chips: ['Free weights', 'Machines', 'Form checks'] },
+  { icon: Icon.Bolt, title: 'Fat loss', text: 'Structured workouts plus a diet built on everyday Rajasthani and Indian food.', chips: ['Cardio', 'Diet plan', 'Weekly check-ins'] },
+  { icon: Icon.User, title: 'Personal training', text: 'One-on-one sessions with a plan written for your body, schedule and goals.', chips: ['1-on-1', 'Custom plan', 'Progress tracking'] },
+  { icon: Icon.Chart, title: 'Member app', text: 'Today’s workout, your diet, days left and payments, on your phone.', chips: ['Workout', 'Diet', 'Progress'] },
+];
+const STEPS = [
+  { title: 'Book a free trial', text: 'Leave your number. We call you back and fix a time that suits you.' },
+  { title: 'Get your plan', text: 'We look at your goal and routine, then write your workout and diet.' },
+  { title: 'Train and track', text: 'Log in to the MFC app to see today’s workout, your diet and your progress.' },
 ];
 const MARQUEE = ['Strength', 'Cardio', 'Personal training', 'Fat loss', 'Diet plans', 'Muscle gain', 'Mobility'];
 
@@ -27,106 +33,133 @@ export default function Home({ initial }: { initial: PublicData | null }) {
   const plans = pub?.plans ?? [];
   const testimonials = pub?.testimonials ?? [];
 
+  const [overHero, setOverHero] = useState(true);
+  useEffect(() => {
+    const onScroll = () => setOverHero(window.scrollY < 40);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const name = site?.gym_name ?? 'Medilife Fitness Club';
   const wa = whatsappLink(site?.whatsapp, `Hi ${name}, I found your website and want to know more about joining.`);
   const portalLink = session ? (session.role === 'admin' ? '/admin' : '/me') : '/login';
   const area = site?.address?.split(',').slice(0, 2).join(' · ') ?? 'Udaipur';
   const featured = plans.length > 2 ? 2 : plans.length - 1;
+  const pickPlan = (planName: string) => window.dispatchEvent(new CustomEvent('pick-plan', { detail: planName }));
 
   const stats = [
-    site?.years_experience ? { v: `${site.years_experience}+`, l: 'Years' } : null,
-    site?.clients_trained ? { v: `${site.clients_trained}+`, l: 'Members trained' } : null,
-    plans.length ? { v: String(plans.length), l: 'Membership plans' } : null,
     plans.length ? { v: money(Math.min(...plans.map((p) => Number(p.price)))), l: 'Plans from' } : null,
+    plans.length ? { v: String(plans.length), l: 'Membership plans' } : null,
+    site?.years_experience ? { v: `${site.years_experience}+`, l: 'Years' } : { v: 'Free', l: 'First session' },
+    site?.clients_trained ? { v: `${site.clients_trained}+`, l: 'Members trained' } : { v: 'App', l: 'Workout + diet' },
   ].filter(Boolean) as { v: string; l: string }[];
 
   return (
     <div className="site" id="top">
       <DemoBanner />
-      <header className="topbar">
+      <header className={`topbar ${overHero ? 'over' : ''}`}>
         <div className="wrap topbar-inner">
           <a href="#top" className="brand"><span className="brand-mark">MFC</span><span>Medilife<small>Fitness Club</small></span></a>
           <nav aria-label="Sections">
-            <a href="#offer">Training</a>
+            <a href="#training">Training</a>
             <a href="#plans">Plans</a>
             <a href="#app">App</a>
             <a href="#visit">Visit</a>
           </nav>
-          <Link href={portalLink} className="btn">{session ? 'My plan' : 'Login'} <span className="arr" aria-hidden="true">↗</span></Link>
+          <div className="right">
+            <ThemeToggle />
+            <Link href={portalLink} className="btn">{session ? 'My plan' : 'Login'} <span className="arr" aria-hidden="true">↗</span></Link>
+          </div>
         </div>
       </header>
 
       <main>
         <section className="hero">
+          {site?.hero_image_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="hero-photo" src={site.hero_image_url} alt="" />
+          )}
           <div className="wrap">
             <p className="label">{area}</p>
-            <div className="hero-grid">
-              <div className="hero-copy">
-                <h1 aria-label={name}>
-                  <span>Medilife</span>
-                  <span className="tone">Fitness</span>
-                  <span className="tone">Club</span>
-                </h1>
-                <p className="hero-note">{site?.tagline ? `${site.tagline} ` : ''}{site?.bio}</p>
-                <div className="hero-cta">
-                  <a href="#join" className="btn btn-lg btn-pop">Book a free trial <span className="arr" aria-hidden="true">↗</span></a>
-                  {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn btn-lg btn-ghost">WhatsApp us <span className="arr" aria-hidden="true">→</span></a>}
-                </div>
-                {stats.length > 0 && (
-                  <div className="hero-meta">
-                    {stats.map((s) => <div key={s.l}><strong>{s.v}</strong><span>{s.l}</span></div>)}
-                  </div>
-                )}
-              </div>
-              <div className="hero-panel">
-                {site?.hero_image_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={site.hero_image_url} alt={`Inside ${name}`} />
-                ) : (
-                  <>
-                    <PulseBarbell className="mark" />
-                    <span className="panel-cap">Health · Strength · Life</span>
-                  </>
-                )}
+            <h1 className="hero-title" aria-label={name}>
+              <span>Medilife</span>
+              <span className="o">Fitness</span>
+              <span className="o">Club</span>
+            </h1>
+            <div className="hero-body">
+              <p className="hero-lead">{site?.tagline ? `${site.tagline} ` : ''}{site?.bio}</p>
+              <div className="hero-cta">
+                <a href="#join" className="btn btn-lg btn-pop">Book a free trial <span className="arr" aria-hidden="true">↗</span></a>
+                {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn btn-lg btn-outline-light">WhatsApp us <span className="arr" aria-hidden="true">→</span></a>}
               </div>
             </div>
-          </div>
-          <div className="marquee" aria-hidden="true">
-            <div className="marquee-track">
-              {[0, 1].map((k) => <span key={k}>{MARQUEE.map((m) => <span key={m + k}>{m}</span>)}</span>)}
+            <div className="hero-stats">
+              {stats.map((s) => <div key={s.l}><strong>{s.v}</strong><span>{s.l}</span></div>)}
             </div>
           </div>
+          <svg className="ecg" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 80 H520 L548 80 L566 34 L590 112 L612 52 L628 80 H700 L716 80 L728 60 L740 80 H1440" />
+          </svg>
         </section>
 
-        <section className="section" id="offer">
+        <div className="marquee" aria-hidden="true">
+          <div className="marquee-track">
+            {[0, 1].map((k) => <span key={k}>{MARQUEE.map((m) => <span key={m + k}>{m}</span>)}</span>)}
+          </div>
+        </div>
+
+        <section className="section" id="training">
           <div className="wrap">
-            <div className="section-head reveal">
+            <div className="section-head">
               <div>
                 <p className="label">Training</p>
-                <h2>What we train <span className="tone">you for.</span></h2>
+                <h2>What we <span className="hl">train</span> you for.</h2>
               </div>
-              <p>Whatever brings you in, you leave with a plan you can follow, and a coach who checks you actually do.</p>
+              <p>Whatever brings you in, you leave with a plan you can follow and a coach who checks you actually do it.</p>
             </div>
-            <div className="rows">
-              {OFFER.map((o) => (
-                <a href="#join" className="row reveal" key={o.title}>
-                  <h3>{o.title}</h3>
-                  <span className="circle" aria-hidden="true"><Icon.ArrowUpRight width={18} height={18} /></span>
-                  <p>{o.text}</p>
-                  <div className="chip-row">{o.chips.map((c) => <span className="mono-chip" key={c}>{c}</span>)}</div>
+            <div className="tcards">
+              {TRAINING.map((t) => (
+                <a href="#join" className="tcard" key={t.title}>
+                  <span className="ticon"><t.icon /></span>
+                  <span className="go" aria-hidden="true"><Icon.ArrowUpRight width={18} height={18} /></span>
+                  <h3>{t.title}</h3>
+                  <p>{t.text}</p>
+                  <div className="chip-row">{t.chips.map((c) => <span className="mono-chip" key={c}>{c}</span>)}</div>
                 </a>
               ))}
             </div>
           </div>
         </section>
 
+        <section className="section alt" id="how">
+          <div className="wrap">
+            <div className="section-head">
+              <div>
+                <p className="label">How it works</p>
+                <h2>Start in <span className="hl">three</span> steps.</h2>
+              </div>
+              <p>No long forms. Come in, try a session, and get a plan the same week.</p>
+            </div>
+            <ol className="steps" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              {STEPS.map((s, i) => (
+                <li className="step" key={s.title}>
+                  <span className="num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                  <h3>{s.title}</h3>
+                  <p>{s.text}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
         {plans.length > 0 && (
-          <section className="section" id="plans" style={{ paddingTop: 0 }}>
+          <section className="section" id="plans">
             <div className="wrap">
-              <div className="section-head reveal">
+              <div className="section-head">
                 <div>
                   <p className="label">Membership</p>
-                  <h2>Simple plans, <em>no</em> hidden fees.</h2>
+                  <h2>Simple plans. <span className="hl">No</span> hidden fees.</h2>
                 </div>
                 <p>Pay at the desk by cash or UPI. Your plan, days left and receipts show up in the MFC app.</p>
               </div>
@@ -140,7 +173,7 @@ export default function Home({ initial }: { initial: PublicData | null }) {
                     <div className="price">{money(p.price)}<small>/ {p.duration_days} days</small></div>
                     {p.description && <p className="muted" style={{ margin: 0 }}>{p.description}</p>}
                     <ul>{p.features?.map((f) => <li key={f}>{f}</li>)}</ul>
-                    <a href="#join" className="btn btn-block" onClick={() => window.dispatchEvent(new CustomEvent('pick-plan', { detail: p.name }))}>
+                    <a href="#join" className="btn btn-block" onClick={() => pickPlan(p.name)}>
                       Choose {p.name} <span className="arr" aria-hidden="true">↗</span>
                     </a>
                   </article>
@@ -151,12 +184,12 @@ export default function Home({ initial }: { initial: PublicData | null }) {
           </section>
         )}
 
-        <section className="section" id="app" style={{ paddingTop: 0 }}>
+        <section className="section alt" id="app">
           <div className="wrap app-promo">
-            <div className="reveal">
-              <p className="label">Member app</p>
-              <div className="section-head" style={{ display: 'block', marginBottom: 22 }}>
-                <h2>Your coach, <em>in your</em> pocket.</h2>
+            <div>
+              <div className="section-head" style={{ display: 'block', marginBottom: 26 }}>
+                <p className="label">Member app</p>
+                <h2>Your coach, in your <span className="hl">pocket.</span></h2>
               </div>
               <ul className="feature-list">
                 <li><span><Icon.Dumbbell /></span><div><strong>Today’s workout</strong><span className="muted">Exercises, sets and reps for each day of the week.</span></div></li>
@@ -167,20 +200,22 @@ export default function Home({ initial }: { initial: PublicData | null }) {
               <Link href="/login" className="btn btn-lg">Member login <span className="arr" aria-hidden="true">↗</span></Link>
               <InstallApp />
             </div>
-            <div className="phone-mock reveal" aria-hidden="true">
-              <div className="phone-screen">
-                <div className="ps-head"><span>Hi Neha 👋</span><span className="brand-mark" style={{ width: 28, height: 28, fontSize: '0.55rem' }}>MFC</span></div>
-                <div className="ps-card">
-                  <div className="muted" style={{ fontSize: '0.68rem' }}>Quarterly membership</div>
-                  <b>62 days left</b>
-                  <div className="ps-meter"><span /></div>
-                </div>
-                <div className="ps-list">
-                  <div className="muted" style={{ background: 'none', border: 'none', padding: '2px 2px 0' }}>Monday · Push</div>
-                  <div><span>Bench press</span><i>4 × 10</i></div>
-                  <div><span>Shoulder press</span><i>3 × 10</i></div>
-                  <div><span>Lateral raises</span><i>3 × 15</i></div>
-                  <div><span>Rope pushdown</span><i>3 × 12</i></div>
+            <div className="phone-stage" aria-hidden="true">
+              <div className="phone-mock">
+                <div className="phone-screen">
+                  <div className="ps-head"><span>Hi Neha 👋</span><span className="brand-mark">MFC</span></div>
+                  <div className="ps-card">
+                    <div className="muted">Quarterly membership</div>
+                    <b>62 days left</b>
+                    <div className="ps-meter"><span /></div>
+                  </div>
+                  <div className="ps-list">
+                    <div className="day">Monday · Push</div>
+                    <div><span>Bench press</span><i>4 × 10</i></div>
+                    <div><span>Shoulder press</span><i>3 × 10</i></div>
+                    <div><span>Lateral raises</span><i>3 × 15</i></div>
+                    <div><span>Rope pushdown</span><i>3 × 12</i></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -190,15 +225,15 @@ export default function Home({ initial }: { initial: PublicData | null }) {
         {testimonials.length > 0 && (
           <section className="section dark" id="results">
             <div className="wrap">
-              <div className="section-head reveal">
+              <div className="section-head">
                 <div>
                   <p className="label">Results</p>
-                  <h2>Real members, <em>real</em> <span className="tone">change.</span></h2>
+                  <h2>Real members, <span className="serif">real</span> change.</h2>
                 </div>
               </div>
               <div className="quotes">
                 {testimonials.map((t) => (
-                  <figure className="quote-row reveal" key={t.id} style={{ margin: 0 }}>
+                  <figure className="quote-row" key={t.id}>
                     <blockquote>“{t.text}”</blockquote>
                     <figcaption className="who"><span>{t.name}</span>{t.result && <b>{t.result}</b>}</figcaption>
                   </figure>
@@ -224,10 +259,10 @@ export default function Home({ initial }: { initial: PublicData | null }) {
 
         <section className="section" id="visit">
           <div className="wrap visit">
-            <div className="reveal">
-              <p className="label">Visit</p>
-              <div className="section-head" style={{ display: 'block', marginBottom: 22 }}>
-                <h2>Come train <em>with us.</em></h2>
+            <div>
+              <div className="section-head" style={{ display: 'block', marginBottom: 24 }}>
+                <p className="label">Visit</p>
+                <h2>Come train <span className="hl">with us.</span></h2>
               </div>
               <dl className="spec">
                 {site?.address && <div><dt>Address</dt><dd>{site.address}</dd></div>}
@@ -241,8 +276,20 @@ export default function Home({ initial }: { initial: PublicData | null }) {
                 {site?.phone && <a className="btn btn-ghost" href={`tel:${site.phone.replace(/\s/g, '')}`}><Icon.Phone width={18} height={18} /> Call</a>}
               </div>
             </div>
-            <div id="join" style={{ scrollMarginTop: 80 }}>
+            <div id="join" style={{ scrollMarginTop: 90 }}>
               <LeadForm planNames={plans.map((p) => p.name)} />
+            </div>
+          </div>
+        </section>
+
+        <section className="cta-band">
+          <div className="wrap">
+            <div>
+              <h2>Your first session is on us.</h2>
+            </div>
+            <div style={{ display: 'grid', gap: 14 }}>
+              <p>Come see the gym, meet the coaches and try a workout. No joining fee to try.</p>
+              <a href="#join" className="btn btn-lg btn-black">Book my free trial <span className="arr" aria-hidden="true">↗</span></a>
             </div>
           </div>
         </section>
@@ -252,12 +299,12 @@ export default function Home({ initial }: { initial: PublicData | null }) {
         <div className="wrap">
           <div className="foot-grid">
             <div>
-              <span className="brand" style={{ color: 'var(--on-deep)' }}><span className="brand-mark" style={{ background: 'var(--pop)', color: 'var(--pop-ink)' }}>MFC</span>{name}</span>
-              <p style={{ marginTop: 12, opacity: 0.75, maxWidth: '36ch' }}>{site?.address}</p>
+              <span className="brand" style={{ color: '#fff' }}><span className="brand-mark" style={{ background: 'var(--orange)', color: '#000' }}>MFC</span>{name}</span>
+              <p style={{ marginTop: 12, opacity: 0.7, maxWidth: '36ch' }}>{site?.address}</p>
             </div>
             <div>
               <h4>Explore</h4>
-              <ul><li><a href="#offer">Training</a></li><li><a href="#plans">Plans</a></li><li><a href="#app">Member app</a></li></ul>
+              <ul><li><a href="#training">Training</a></li><li><a href="#plans">Plans</a></li><li><a href="#app">Member app</a></li></ul>
             </div>
             <div>
               <h4>Connect</h4>
@@ -294,12 +341,12 @@ export default function Home({ initial }: { initial: PublicData | null }) {
 function LeadForm({ planNames }: { planNames: string[] }) {
   const [form, setForm] = useState({ name: '', phone: '', email: '', message: '', interested_plan: '' });
   const [state, setState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
+  const [err, setErr] = useState('');
   useEffect(() => {
     const onPick = (e: Event) => setForm((f) => ({ ...f, interested_plan: (e as CustomEvent<string>).detail }));
     window.addEventListener('pick-plan', onPick);
     return () => window.removeEventListener('pick-plan', onPick);
   }, []);
-  const [err, setErr] = useState('');
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value });
 
   async function submit(e: FormEvent) {
@@ -347,7 +394,7 @@ function LeadForm({ planNames }: { planNames: string[] }) {
       </select>
       <textarea id="lead-msg" rows={3} placeholder="Your goal or preferred time (optional)" value={form.message} onChange={set('message')} />
       {state === 'error' && <div className="error-box">{err}</div>}
-      <button className="btn btn-lg btn-block" disabled={state === 'sending'}>
+      <button className="btn btn-lg btn-block btn-pop" disabled={state === 'sending'}>
         {state === 'sending' ? 'Sending…' : 'Request a call back'} <span className="arr" aria-hidden="true">↗</span>
       </button>
     </form>

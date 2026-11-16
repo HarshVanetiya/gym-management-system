@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { DEMO_ADMIN_EMAIL, store } from '../lib/store';
 import { useAuth } from '../lib/hooks';
 import { DemoBanner } from '../components/DemoBanner';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 export default function Login() {
   const { session, refresh } = useAuth();
@@ -58,7 +59,10 @@ export default function Login() {
     <div className="auth-page">
       <DemoBanner />
       <div className="auth-wrap">
-        <Link href="/" className="brand auth-brand"><span className="brand-mark">MFC</span><span>Medilife<small>Fitness Club</small></span></Link>
+        <div className="row-actions" style={{ justifyContent: 'space-between' }}>
+          <Link href="/" className="brand auth-brand"><span className="brand-mark">MFC</span><span>Medilife<small>Fitness Club</small></span></Link>
+          <ThemeToggle />
+        </div>
         <form className="card auth-card" onSubmit={submit}>
           <h2>{mode === 'in' ? 'Log in' : 'Create your account'}</h2>
           <p className="muted small">

@@ -12,6 +12,7 @@ import { AttendanceStrip } from '../admin/MemberDetail';
 import { DemoBanner } from '../../components/DemoBanner';
 import { Icon } from '../../components/icons';
 import { InstallApp } from '../../components/Pwa';
+import { ThemeToggle } from '../../components/ThemeToggle';
 
 type Tab = 'workout' | 'diet' | 'progress' | 'payments';
 const TAB_ICON: Record<Tab, typeof Icon.Dumbbell> = { workout: Icon.Dumbbell, diet: Icon.Leaf, progress: Icon.Chart, payments: Icon.Receipt };
@@ -46,7 +47,10 @@ export default function MemberPortal() {
   const header = (
     <header className="portal-head">
       <div className="brand"><span className="brand-mark">MFC</span><span>Medilife<small>Member</small></span></div>
-      <button className="link-btn" onClick={logout}>Log out</button>
+      <div className="row-actions">
+        <ThemeToggle />
+        <button className="link-btn" onClick={logout}>Log out</button>
+      </div>
     </header>
   );
 

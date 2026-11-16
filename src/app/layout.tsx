@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { Providers } from './providers';
 import { RegisterServiceWorker } from '../components/Pwa';
+import { themeInitScript } from '../components/ThemeToggle';
 // Fonts are bundled with the app (no Google Fonts request), so they also work offline.
 import '@fontsource-variable/manrope';
 import '@fontsource-variable/inter';
@@ -33,7 +34,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en-IN">
+    <html lang="en-IN" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>
         <Providers>{children}</Providers>
         <RegisterServiceWorker />

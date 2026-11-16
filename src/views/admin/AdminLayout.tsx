@@ -8,6 +8,7 @@ import { useAuth } from '../../lib/hooks';
 import { DemoBanner } from '../../components/DemoBanner';
 import { Icon } from '../../components/icons';
 import { InstallApp } from '../../components/Pwa';
+import { ThemeToggle } from '../../components/ThemeToggle';
 
 const LINKS = [
   { to: '/admin', label: 'Dashboard', short: 'Home', icon: Icon.Grid, end: true, tab: true },
@@ -39,7 +40,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <DemoBanner />
       <header className="app-top">
         <Link href="/admin" className="brand"><span className="brand-mark">MFC</span><span>Medilife<small>Trainer</small></span></Link>
-        <Link href="/admin/members?new=1" className="btn btn-sm">+ Member</Link>
+        <div className="row-actions">
+          <ThemeToggle />
+          <Link href="/admin/members?new=1" className="btn btn-sm">+ Member</Link>
+        </div>
       </header>
       <div className="app-shell">
         <aside className="sidebar">
@@ -54,7 +58,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           <div className="sidebar-foot">
             <a href="/" target="_blank" rel="noreferrer">View website ↗</a>
             <span className="muted small">{session?.email}</span>
-            <button className="link-btn" onClick={logout}>Log out</button>
+            <div className="row-actions" style={{ justifyContent: 'space-between' }}>
+              <button className="link-btn" onClick={logout}>Log out</button>
+              <ThemeToggle />
+            </div>
           </div>
         </aside>
         <main className="main">{children}</main>
