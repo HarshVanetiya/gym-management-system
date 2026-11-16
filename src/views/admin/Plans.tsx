@@ -6,6 +6,7 @@ import { useAsync } from '../../lib/hooks';
 import type { Plan } from '../../lib/types';
 import { money } from '../../lib/utils';
 import { ErrorBox, Field, Loading, Modal } from '../../components/ui';
+import { Icon } from '../../components/icons';
 
 export default function Plans() {
   const { data, error, loading, reload } = useAsync(() => store.list('plans', { order: ['sort_order', 'asc'] }));
@@ -19,7 +20,7 @@ export default function Plans() {
           <h1>Membership plans</h1>
           <p className="muted">Shown on the website pricing section and used when renewing members.</p>
         </div>
-        <button className="btn" onClick={() => setEditing('new')}>+ New plan</button>
+        <button className="btn" onClick={() => setEditing('new')}><Icon.Plus width={17} height={17} /> New plan</button>
       </div>
       <ErrorBox error={error} />
       <div className="grid-3">
@@ -32,7 +33,7 @@ export default function Plans() {
             <div className="price small-price">{money(p.price)}<span> / {p.duration_days} days</span></div>
             <p className="muted">{p.description}</p>
             <ul className="ticks">{p.features?.map((f) => <li key={f}>{f}</li>)}</ul>
-            <button className="btn btn-sm btn-ghost" onClick={() => setEditing(p)}>Edit</button>
+            <button className="btn btn-sm btn-ghost" onClick={() => setEditing(p)}><Icon.Edit width={16} height={16} /> Edit</button>
           </div>
         ))}
       </div>

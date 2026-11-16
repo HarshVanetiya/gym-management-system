@@ -5,13 +5,15 @@ import { store } from '../../lib/store';
 import { invalidateSite, useAsync } from '../../lib/hooks';
 import type { SiteSettings, Testimonial } from '../../lib/types';
 import { ErrorBox, Field, Loading } from '../../components/ui';
+import { Icon } from '../../components/icons';
+import { PhotoButton } from '../../components/Media';
+import { cld } from '../../lib/media';
 
-type TextKey = Exclude<keyof SiteSettings, 'id' | 'years_experience' | 'clients_trained' | 'certifications' | 'gallery_urls' | 'tagline_hi'>;
+type TextKey = Exclude<keyof SiteSettings, 'id' | 'years_experience' | 'clients_trained' | 'certifications' | 'gallery_urls' | 'tagline_hi' | 'hero_image_url'>;
 const TEXT_FIELDS: [TextKey, string, string?][] = [
   ['gym_name', 'Gym name'],
   ['trainer_name', 'Trainer name'],
   ['tagline', 'Short tagline'],
-  ['hero_image_url', 'Main photo link', 'Paste a photo link (e.g. from Google Photos or the gym’s site). Leave empty to show the MFC artwork.'],
   ['phone', 'Phone'],
   ['whatsapp', 'WhatsApp number', 'With country code, digits only — e.g. 919876543210'],
   ['email', 'Email'],
@@ -28,7 +30,7 @@ export default function SiteEditor() {
   const tst = useAsync(() => store.list('testimonials', { order: ['created_at', 'desc'] }));
   const [f, setF] = useState<SiteSettings | null>(null);
   const [certs, setCerts] = useState('');
-  const [gallery, setGallery] = useState('');
+  const [gallery, setGallery] = useState<(string | null)[]>([null, null, null, null, null]);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -36,11 +38,31 @@ export default function SiteEditor() {
     if (site.data) {
       setF(site.data);
       setCerts((site.data.certifications ?? []).join('\n'));
-      setGallery((site.data.gallery_urls ?? []).join('\n'));
+      const g = site.data.gallery_urls ?? [];
+      setGallery([0, 1, 2, 3, 4].map((i) => g[i] ?? null));
     }
   }, [site.data]);
 
   if (!f) return site.error ? <ErrorBox error={site.error} /> : <Loading />;
+
+  /** Photos save straight away, so an upload is never lost if the form isn't submitted. */
+  async function savePhotos(patch: { hero_image_url?: string | null; gallery?: (string | null)[] }) {
+    setErr(null);
+    try {
+      const nextGallery = patch.gallery ?? gallery;
+      await store.update('site_settings', 1, {
+        ...(patch.hero_image_url !== undefined ? { hero_image_url: patch.hero_image_url } : {}),
+        gallery_urls: nextGallery.filter((u): u is string => Boolean(u)),
+      });
+      if (patch.hero_image_url !== undefined) setF((cur) => (cur ? { ...cur, hero_image_url: patch.hero_image_url ?? null } : cur));
+      setGallery(nextGallery);
+      invalidateSite();
+      setMsg('Photo saved. Your website is updated.');
+      setTimeout(() => setMsg(null), 3000);
+    } catch (ex) {
+      setErr((ex as Error).message);
+    }
+  }
 
   async function save(e: FormEvent) {
     e.preventDefault();
@@ -48,7 +70,7 @@ export default function SiteEditor() {
     try {
       const { id: _id, ...rest } = f!;
       void _id;
-      await store.update('site_settings', 1, { ...rest, certifications: certs.split('\n').map((c) => c.trim()).filter(Boolean), gallery_urls: gallery.split('\n').map((c) => c.trim()).filter(Boolean) });
+      await store.update('site_settings', 1, { ...rest, certifications: certs.split('\n').map((c) => c.trim()).filter(Boolean), gallery_urls: gallery.filter((u): u is string => Boolean(u)) });
       invalidateSite();
       setMsg('Saved. Your website is updated.');
       setTimeout(() => setMsg(null), 3000);
@@ -64,9 +86,48 @@ export default function SiteEditor() {
           <h1>Website</h1>
           <p className="muted">Everything here shows on your public portfolio page.</p>
         </div>
-        <a className="btn btn-ghost" href="/" target="_blank" rel="noreferrer">Open website ↗</a>
+        <a className="btn btn-ghost" href="/" target="_blank" rel="noreferrer"><Icon.ExternalLink width={17} height={17} /> Open website</a>
       </div>
-      <form className="card form-grid" onSubmit={save}>
+      <section className="card photos-card">
+        <div className="card-head"><h3><Icon.Camera /> Photos</h3><span className="muted small">Stored on Cloudinary and resized automatically</span></div>
+        <div className="photo-slot hero-slot">
+          <div className="thumb">
+            {f.hero_image_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={cld(f.hero_image_url, { w: 640 })} alt="Main photo" />
+            ) : <span className="muted small">No main photo. The website shows the MFC artwork.</span>}
+          </div>
+          <div>
+            <strong>Main photo</strong>
+            <p className="muted small">Shown behind the big title at the top of the website. A wide photo of the gym floor works best.</p>
+            <div className="row-actions wrap">
+              <PhotoButton target={{ kind: 'hero' }} label={f.hero_image_url ? 'Replace' : 'Upload'} onUploaded={(url) => savePhotos({ hero_image_url: url })} />
+              {f.hero_image_url && <button type="button" className="btn btn-sm btn-ghost danger" onClick={() => savePhotos({ hero_image_url: null })}><Icon.Trash width={16} height={16} /> Remove</button>}
+            </div>
+          </div>
+        </div>
+        <strong className="gallery-title">Gallery</strong>
+        <p className="muted small">Up to 5 photos for an “Inside the gym” section. Leave empty to hide it.</p>
+        <div className="gallery-slots">
+          {gallery.map((u, i) => (
+            <div className="gallery-slot" key={i}>
+              <div className="thumb">
+                {u ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={cld(u, { w: 320, h: 320 })} alt={`Gallery photo ${i + 1}`} />
+                ) : <Icon.Camera />}
+              </div>
+              <div className="row-actions">
+                <PhotoButton target={{ kind: 'gallery', slot: i + 1 }} label={u ? 'Replace' : 'Upload'} onUploaded={(url) => savePhotos({ gallery: gallery.map((g, j) => (j === i ? url : g)) })} />
+                {u && <button type="button" className="icon-btn" aria-label={`Remove gallery photo ${i + 1}`} onClick={() => savePhotos({ gallery: gallery.map((g, j) => (j === i ? null : g)) })}><Icon.Trash width={17} height={17} /></button>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <form className="card form-grid mt" onSubmit={save}>
+        <h3 className="span-2"><Icon.Globe /> Details</h3>
         {TEXT_FIELDS.map(([k, label, hint]) => (
           <Field key={k} label={label} hint={hint}>
             <input value={(f[k] as string) ?? ''} onChange={(e) => setF({ ...f, [k]: e.target.value })} />
@@ -75,10 +136,9 @@ export default function SiteEditor() {
         <Field label="Years running" hint="0 hides it on the website"><input type="number" value={f.years_experience ?? 0} onChange={(e) => setF({ ...f, years_experience: Number(e.target.value) })} /></Field>
         <Field label="Members trained" hint="0 hides it on the website"><input type="number" value={f.clients_trained ?? 0} onChange={(e) => setF({ ...f, clients_trained: Number(e.target.value) })} /></Field>
         <div className="span-2"><Field label="About / bio"><textarea rows={4} value={f.bio ?? ''} onChange={(e) => setF({ ...f, bio: e.target.value })} /></Field></div>
-        <div className="span-2"><Field label="Gallery photo links (one per line, up to 5)" hint="Shown in an “Inside the gym” section. Leave empty to hide it."><textarea rows={3} value={gallery} onChange={(e) => setGallery(e.target.value)} /></Field></div>
         <div className="span-2"><Field label="Coach certifications (one per line)"><textarea rows={3} value={certs} onChange={(e) => setCerts(e.target.value)} /></Field></div>
         <div className="span-2"><ErrorBox error={err} />{msg && <div className="info-box">{msg}</div>}</div>
-        <div className="span-2 form-actions"><button className="btn">Save website</button></div>
+        <div className="span-2 form-actions"><button className="btn"><Icon.Check width={17} height={17} /> Save website</button></div>
       </form>
 
       <h2 className="mt">Testimonials</h2>
@@ -111,7 +171,7 @@ function TestimonialEditor({ rows, reload }: { rows: Testimonial[]; reload: () =
             <p className="small">{t.text}</p>
             <div className="row-actions">
               <button className="btn btn-sm btn-ghost" onClick={async () => { await store.update('testimonials', t.id, { is_published: !t.is_published }); reload(); }}>{t.is_published ? 'Hide' : 'Publish'}</button>
-              <button className="btn btn-sm btn-ghost danger" onClick={async () => { if (confirm('Delete?')) { await store.remove('testimonials', t.id); reload(); } }}>Delete</button>
+              <button className="btn btn-sm btn-ghost danger" onClick={async () => { if (confirm('Delete this testimonial?')) { await store.remove('testimonials', t.id); reload(); } }} aria-label="Delete testimonial"><Icon.Trash width={16} height={16} /></button>
             </div>
           </div>
         ))}

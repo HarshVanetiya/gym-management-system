@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import type { AppSession, TableName, Tables } from './types';
+import type { AppSession, Member, TableName, Tables } from './types';
 import { buildSeed } from './seed';
 
 export interface ListOpts {
@@ -14,6 +14,15 @@ export interface AuthAdapter {
   signUp(email: string, password: string): Promise<{ needsEmailConfirm: boolean }>;
   signOut(): Promise<void>;
   onChange(cb: () => void): () => void;
+  /** Token of the logged-in user, sent to our server routes (e.g. to sign Cloudinary uploads). */
+  getAccessToken(): Promise<string | null>;
+}
+
+export interface UsageReport {
+  tables: { name: string; rows: number; bytes: number }[];
+  totalBytes: number;
+  /** Database size allowed on the current plan (Supabase Free = 500 MB); null in demo mode. */
+  limitBytes: number | null;
 }
 
 export interface Store {
@@ -25,6 +34,17 @@ export interface Store {
   insertQuiet<K extends TableName>(table: K, row: Partial<Tables[K]>): Promise<void>;
   update<K extends TableName>(table: K, id: string | number, patch: Partial<Tables[K]>): Promise<Tables[K]>;
   remove(table: TableName, id: string | number): Promise<void>;
+  /** Every row of a table, paging past Supabase's 1,000-row response cap (for backups). */
+  listAll<K extends TableName>(table: K): Promise<Tables[K][]>;
+  /** Insert many rows in batches, keeping their ids (for restores). */
+  insertMany<K extends TableName>(table: K, rows: Partial<Tables[K]>[], onBatch?: (done: number) => void): Promise<void>;
+  /** Delete every row of a table (for restores). */
+  removeAll(table: TableName): Promise<void>;
+  /** A member updates their own phone number and photo. */
+  updateMyProfile(patch: { phone: string | null; photo_url: string | null }): Promise<Member>;
+  usage(): Promise<UsageReport>;
+  /** Delete attendance and closed enquiries older than N months. */
+  purgeOld(months: number): Promise<{ attendance: number; leads: number }>;
   auth: AuthAdapter;
   /** Demo only: wipe local data and reload sample data. */
   resetDemo?(): void;
@@ -71,6 +91,46 @@ function supabaseStore(sb: SupabaseClient): Store {
       const { error } = await sb.from(table).delete().eq('id', id);
       fail(error);
     },
+    async listAll(table) {
+      const page = 1000;
+      const out: unknown[] = [];
+      for (let from = 0; ; from += page) {
+        const { data, error } = await sb.from(table).select('*').order('id').range(from, from + page - 1);
+        fail(error);
+        out.push(...(data ?? []));
+        if (!data || data.length < page) break;
+      }
+      return out as never;
+    },
+    async insertMany(table, rows, onBatch) {
+      const batch = 500;
+      for (let i = 0; i < rows.length; i += batch) {
+        const { error } = await sb.from(table).upsert(rows.slice(i, i + batch) as never[]);
+        fail(error);
+        onBatch?.(Math.min(i + batch, rows.length));
+      }
+    },
+    async removeAll(table) {
+      const { error } = await sb.from(table).delete().not('id', 'is', null);
+      fail(error);
+    },
+    async updateMyProfile(patch) {
+      const { data, error } = await sb.rpc('update_my_profile', { p_phone: patch.phone, p_photo_url: patch.photo_url });
+      fail(error);
+      return data as Member;
+    },
+    async usage() {
+      const { data, error } = await sb.rpc('db_usage');
+      fail(error);
+      const d = data as { database_bytes: number; tables: { name: string; rows: number; bytes: number }[] | null };
+      return { tables: d.tables ?? [], totalBytes: Number(d.database_bytes), limitBytes: 500 * 1024 * 1024 };
+    },
+    async purgeOld(months) {
+      const { data, error } = await sb.rpc('purge_old_records', { p_months: months });
+      fail(error);
+      const r = (Array.isArray(data) ? data[0] : data) as { attendance_deleted: number; leads_deleted: number };
+      return { attendance: Number(r.attendance_deleted), leads: Number(r.leads_deleted) };
+    },
     auth: {
       async getSession() {
         const { data } = await sb.auth.getSession();
@@ -98,6 +158,10 @@ function supabaseStore(sb: SupabaseClient): Store {
       onChange(cb) {
         const { data } = sb.auth.onAuthStateChange(() => cb());
         return () => data.subscription.unsubscribe();
+      },
+      async getAccessToken() {
+        const { data } = await sb.auth.getSession();
+        return data.session?.access_token ?? null;
       },
     },
   };
@@ -220,9 +284,54 @@ function demoStore(): Store {
       }
       save();
     },
+    async listAll(table) {
+      return this.list(table);
+    },
+    async insertMany(table, newRows, onBatch) {
+      await tick();
+      rows(table).push(...(clone(newRows) as Record<string, unknown>[]));
+      save();
+      onBatch?.(newRows.length);
+    },
+    async removeAll(table) {
+      await tick();
+      db[table] = [] as never;
+      save();
+    },
+    async updateMyProfile(patch) {
+      await tick();
+      const sess = readSession();
+      const m = db.members.find((x) => x.user_id && x.user_id === sess?.userId);
+      if (!m) throw new Error('No member profile is linked to this login.');
+      if (patch.phone && !/^[0-9+\s-]{10,15}$/.test(patch.phone)) throw new Error('Enter a valid mobile number.');
+      m.phone = patch.phone;
+      m.photo_url = patch.photo_url;
+      save();
+      return clone(m);
+    },
+    async usage() {
+      await tick();
+      const tables = (Object.keys(db) as TableName[]).map((name) => ({ name, rows: db[name].length, bytes: new Blob([JSON.stringify(db[name])]).size }));
+      return { tables: tables.sort((a, b) => b.bytes - a.bytes), totalBytes: tables.reduce((t, x) => t + x.bytes, 0), limitBytes: null };
+    },
+    async purgeOld(months) {
+      await tick();
+      const d = new Date();
+      d.setMonth(d.getMonth() - months);
+      const cutoff = d.toISOString().slice(0, 10);
+      const a = db.attendance.length;
+      db.attendance = db.attendance.filter((x) => x.check_in >= cutoff);
+      const l = db.leads.length;
+      db.leads = db.leads.filter((x) => x.status === 'new' || x.status === 'contacted' || x.created_at.slice(0, 10) >= cutoff);
+      save();
+      return { attendance: a - db.attendance.length, leads: l - db.leads.length };
+    },
     auth: {
       async getSession() {
         return readSession();
+      },
+      async getAccessToken() {
+        return null;
       },
       async signIn(email) {
         await tick();

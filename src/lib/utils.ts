@@ -25,6 +25,13 @@ export function fmtDate(date: string | null | undefined): string {
   return new Date(y, m - 1, d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+/** "18 Nov" — for tight spaces on phones. */
+export function fmtShort(date: string | null | undefined): string {
+  if (!date) return '—';
+  const [y, m, d] = date.slice(0, 10).split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+}
+
 export function money(n: number | null | undefined): string {
   return '₹' + Number(n ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
 }
@@ -58,7 +65,7 @@ export function summarize(member: Member, subs: Subscription[], payments: Paymen
 
 export const STATUS_LABEL: Record<MemberStatus, string> = {
   active: 'Active',
-  expiring: 'Expiring soon',
+  expiring: 'Expiring',
   expired: 'Expired',
   none: 'No plan',
 };

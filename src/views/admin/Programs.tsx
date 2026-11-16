@@ -6,6 +6,7 @@ import { useAsync } from '../../lib/hooks';
 import type { DietPlan, Meal, WorkoutDay, WorkoutPlan } from '../../lib/types';
 import { WEEK_DAYS } from '../../lib/utils';
 import { Empty, ErrorBox, Field, Loading, Modal } from '../../components/ui';
+import { Icon } from '../../components/icons';
 import { DietView, WorkoutView } from '../../components/ProgramViews';
 
 export default function Programs() {
@@ -28,11 +29,11 @@ export default function Programs() {
           <h1>Workouts & Diets</h1>
           <p className="muted">Create templates once, assign them to many members from their profile.</p>
         </div>
-        <button className="btn" onClick={() => (tab === 'workouts' ? setEditW('new') : setEditD('new'))}>+ New {tab === 'workouts' ? 'workout plan' : 'diet plan'}</button>
+        <button className="btn" onClick={() => (tab === 'workouts' ? setEditW('new') : setEditD('new'))}><Icon.Plus width={17} height={17} /> New {tab === 'workouts' ? 'workout' : 'diet'}</button>
       </div>
       <div className="chips">
-        <button className={`chip ${tab === 'workouts' ? 'active' : ''}`} onClick={() => setTab('workouts')}>🏋️ Workout plans</button>
-        <button className={`chip ${tab === 'diets' ? 'active' : ''}`} onClick={() => setTab('diets')}>🥗 Diet plans</button>
+        <button className={`chip ${tab === 'workouts' ? 'active' : ''}`} onClick={() => setTab('workouts')}><Icon.Dumbbell width={17} height={17} /> Workout plans</button>
+        <button className={`chip ${tab === 'diets' ? 'active' : ''}`} onClick={() => setTab('diets')}><Icon.Leaf width={17} height={17} /> Diet plans</button>
       </div>
       <ErrorBox error={error} />
 
@@ -119,10 +120,10 @@ function WorkoutForm({ plan, onClose, onSaved }: { plan?: WorkoutPlan; onClose: 
               <input value={x.sets} placeholder="3" onChange={(e) => patchDay({ exercises: cur.exercises.map((y, j) => (j === i ? { ...y, sets: e.target.value } : y)) })} />
               <input value={x.reps} placeholder="10-12" onChange={(e) => patchDay({ exercises: cur.exercises.map((y, j) => (j === i ? { ...y, reps: e.target.value } : y)) })} />
               <input value={x.notes ?? ''} placeholder="Optional" onChange={(e) => patchDay({ exercises: cur.exercises.map((y, j) => (j === i ? { ...y, notes: e.target.value } : y)) })} />
-              <button type="button" className="icon-btn" onClick={() => patchDay({ exercises: cur.exercises.filter((_, j) => j !== i) })} aria-label="Remove">✕</button>
+              <button type="button" className="icon-btn" onClick={() => patchDay({ exercises: cur.exercises.filter((_, j) => j !== i) })} aria-label="Remove"><Icon.Close width={18} height={18} /></button>
             </div>
           ))}
-          <button type="button" className="btn btn-sm btn-ghost" onClick={() => patchDay({ exercises: [...cur.exercises, { name: '', sets: '3', reps: '10' }] })}>+ Add exercise</button>
+          <button type="button" className="btn btn-sm btn-ghost" onClick={() => patchDay({ exercises: [...cur.exercises, { name: '', sets: '3', reps: '10' }] })}><Icon.Plus width={16} height={16} /> Add exercise</button>
         </div>
         <ErrorBox error={err} />
         <div className="form-actions">
@@ -174,10 +175,10 @@ function DietForm({ plan, onClose, onSaved }: { plan?: DietPlan; onClose: () => 
               <input value={m.time} placeholder="Time" onChange={(e) => patch(i, { time: e.target.value })} />
               <input value={m.name} placeholder="Meal" onChange={(e) => patch(i, { name: e.target.value })} />
               <textarea rows={2} value={m.items} placeholder="What to eat" onChange={(e) => patch(i, { items: e.target.value })} />
-              <button type="button" className="icon-btn" onClick={() => setMeals(meals.filter((_, j) => j !== i))} aria-label="Remove">✕</button>
+              <button type="button" className="icon-btn" onClick={() => setMeals(meals.filter((_, j) => j !== i))} aria-label="Remove"><Icon.Close width={18} height={18} /></button>
             </div>
           ))}
-          <button type="button" className="btn btn-sm btn-ghost" onClick={() => setMeals([...meals, { time: '', name: '', items: '' }])}>+ Add meal</button>
+          <button type="button" className="btn btn-sm btn-ghost" onClick={() => setMeals([...meals, { time: '', name: '', items: '' }])}><Icon.Plus width={16} height={16} /> Add meal</button>
         </div>
         <ErrorBox error={err} />
         <div className="form-actions">

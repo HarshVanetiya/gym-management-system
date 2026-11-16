@@ -104,6 +104,7 @@ export interface Member {
   goal: string | null;
   notes: string | null;
   height_cm: number | null;
+  photo_url?: string | null;
   workout_plan_id: string | null;
   diet_plan_id: string | null;
   created_at?: string;

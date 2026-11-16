@@ -6,6 +6,7 @@ import { useAsync } from '../lib/hooks';
 import { fmtDate, isoDate } from '../lib/utils';
 import type { ProgressLog } from '../lib/types';
 import { Empty, ErrorBox } from './ui';
+import { Icon } from './icons';
 
 export function ProgressPanel({ memberId, canEdit }: { memberId: string; canEdit?: boolean }) {
   const { data, error, reload } = useAsync(() => store.list('progress_logs', { eq: { member_id: memberId }, order: ['logged_on', 'asc'] }), [memberId]);
@@ -66,7 +67,7 @@ export function ProgressPanel({ memberId, canEdit }: { memberId: string; canEdit
               <span className="row-actions">
                 {l.weight_kg != null && <strong>{l.weight_kg} kg</strong>}
                 {l.waist_cm != null && <span className="muted">waist {l.waist_cm} cm</span>}
-                {canEdit && <button className="icon-btn" title="Delete" onClick={() => del(l.id)}>🗑</button>}
+                {canEdit && <button className="icon-btn" title="Delete entry" aria-label="Delete entry" onClick={() => del(l.id)}><Icon.Trash width={18} height={18} /></button>}
               </span>
             </li>
           ))}

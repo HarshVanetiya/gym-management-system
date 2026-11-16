@@ -304,6 +304,75 @@ drop policy if exists "progress self delete" on public.progress_logs;
 create policy "progress self delete" on public.progress_logs for delete using (member_id = public.my_member_id());
 
 -- ---------------------------------------------------------------------
+-- Member profile photo (stored on Cloudinary; only the link is kept here)
+-- ---------------------------------------------------------------------
+alter table public.members add column if not exists photo_url text;
+
+-- Faster "today's check-ins" and progress lookups as data grows
+create index if not exists attendance_check_in_idx on public.attendance (check_in);
+create index if not exists progress_member_idx on public.progress_logs (member_id, logged_on);
+
+-- Members can change ONLY their own phone number and photo (everything else stays trainer-only).
+create or replace function public.update_my_profile(p_phone text, p_photo_url text)
+returns public.members language plpgsql security definer set search_path = public as $$
+declare m public.members;
+begin
+  if p_phone is not null and trim(p_phone) <> '' and trim(p_phone) !~ '^[0-9+ -]{10,15}$' then
+    raise exception 'Enter a valid mobile number';
+  end if;
+  if p_photo_url is not null and p_photo_url !~ '^https://res\.cloudinary\.com/' then
+    raise exception 'Photos must be uploaded through the app';
+  end if;
+  update public.members
+     set phone = nullif(trim(p_phone), ''), photo_url = p_photo_url
+   where user_id = auth.uid()
+  returning * into m;
+  if m.id is null then raise exception 'No member profile is linked to this login'; end if;
+  return m;
+end;
+$$;
+revoke all on function public.update_my_profile(text, text) from public, anon;
+grant execute on function public.update_my_profile(text, text) to authenticated;
+
+-- Storage report for the trainer: database size and exact rows / bytes per table.
+create or replace function public.db_usage()
+returns json language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'Only the trainer can see storage usage'; end if;
+  return json_build_object(
+    'database_bytes', pg_database_size(current_database()),
+    'tables', (
+      select json_agg(json_build_object(
+        'name', c.relname,
+        'rows', (xpath('/row/c/text()', query_to_xml(format('select count(*) as c from public.%I', c.relname), false, true, '')))[1]::text::bigint,
+        'bytes', pg_total_relation_size(c.oid)) order by pg_total_relation_size(c.oid) desc)
+      from pg_class c join pg_namespace n on n.oid = c.relnamespace
+      where n.nspname = 'public' and c.relkind = 'r'));
+end;
+$$;
+revoke all on function public.db_usage() from public, anon;
+grant execute on function public.db_usage() to authenticated;
+
+-- Housekeeping: delete attendance and closed enquiries (joined / lost) older than N months.
+-- Members, payments, plans and progress are never deleted by this.
+create or replace function public.purge_old_records(p_months int)
+returns table (attendance_deleted bigint, leads_deleted bigint)
+language plpgsql security definer set search_path = public as $$
+declare cutoff date := (current_date - make_interval(months => p_months))::date;
+begin
+  if not public.is_admin() then raise exception 'Only the trainer can clean up records'; end if;
+  if p_months < 6 then raise exception 'Keep at least 6 months of records'; end if;
+  delete from public.attendance where check_in < cutoff;
+  get diagnostics attendance_deleted = row_count;
+  delete from public.leads where status in ('joined', 'lost') and created_at < cutoff;
+  get diagnostics leads_deleted = row_count;
+  return next;
+end;
+$$;
+revoke all on function public.purge_old_records(int) from public, anon;
+grant execute on function public.purge_old_records(int) to authenticated;
+
+-- ---------------------------------------------------------------------
 -- LAST STEP (manual): make the trainer an admin.
 -- 1. Sign up on the website's /login page with the trainer's email.
 -- 2. Run:  update public.profiles set role = 'admin' where email = 'trainer@example.com';

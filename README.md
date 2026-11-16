@@ -56,6 +56,59 @@ in your browser, and the login page has one-click buttons for **Trainer** and **
 Security is enforced in the database with Row Level Security (see `schema.sql`). Members can only
 read their own records, and only the admin can change memberships, payments and programs.
 
+### Member profile (phone + photo)
+Members open **Profile** in the member app to change their mobile number and upload a photo. Everything else
+(name, email, plans, payments) stays trainer-only: the database only lets a member change those two fields on
+their own record (`update_my_profile` in `schema.sql`). The trainer can also add or change a member's photo from
+the member's page.
+
+## Photos on Cloudinary
+
+Member photos and the website's main photo and gallery are stored on **Cloudinary**, not in Supabase.
+
+1. Create a free Cloudinary account. The dashboard shows the **cloud name**, **API key** and **API secret**.
+2. Add them to `.env` (and to your host's environment variables):
+   `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`.
+3. That's it. No upload preset is needed.
+
+How it works:
+- **Smaller uploads:** the browser shrinks each photo first (members 640 px, gallery 1600 px, main photo 2000 px).
+- **Signed uploads:** `/api/upload-signature` checks who is logged in, then signs the upload. The API secret never
+  reaches the browser.
+- **Who can upload what:** members can only replace their own photo. The trainer can upload member photos and website photos.
+- **No piling up:** each photo has a fixed slot (`mfc/members/<member id>`, `mfc/site/hero`, `mfc/site/gallery-1…5`),
+  so a new upload replaces the old file.
+- **Smaller downloads:** photos are shown through Cloudinary transformations (`f_auto,q_auto` plus the exact size needed).
+
+In demo mode, photos are kept as small copies inside the browser instead.
+
+## Backup and moving to a new Supabase account
+
+**Dashboard → More → Backup & data** has the following:
+
+- **Download backup.** Saves one `mfc-backup-<date>.json.gz` file with every table: members, memberships,
+  payments, attendance, progress, plans, workouts, diets, enquiries, testimonials and website settings.
+  The file is gzip-compressed JSON, so it's about 6× smaller than plain JSON. 5 years of a 300-member gym is about 8 MB.
+- **Restore from backup.** Shows what's in the file, asks you to confirm, then replaces all data and shows a progress bar.
+  If the connection drops halfway, run it again with the same file: rows keep their ids, so it finishes cleanly.
+- **Storage** shows the database size against the free 500 MB, and roughly how many years are left.
+- **Clean up** removes check-ins and closed enquiries older than 1 to 5 years. Members, payments, memberships
+  and progress are never removed.
+
+**Moving to a new Supabase project:**
+1. Old site: **Download backup**.
+2. New Supabase project: run `supabase/schema.sql`. You don't need `seed.sql`.
+3. Point the app at the new project (`NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`) and redeploy.
+4. Sign up with the trainer's email and make it admin (step 7 above).
+5. **Backup & data → Restore**, then choose the file. Done.
+
+**Not inside the file:**
+- **Logins (passwords):** they belong to the old project's Supabase Auth. Members simply **sign up again with the same email**,
+  and the database re-links them to their records automatically.
+- **Photos:** they stay on Cloudinary, and their links in the backup keep working.
+
+Separately, the GitHub Actions workflow below keeps a nightly database dump as a second safety net.
+
 ## Deploy (free)
 
 Next.js needs a host that runs a small server (for the server-rendered home page). Free options that allow a business site:

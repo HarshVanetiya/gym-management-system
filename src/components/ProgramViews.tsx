@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { DietPlan, WorkoutPlan } from '../lib/types';
 import { todayWeekDay, WEEK_DAYS } from '../lib/utils';
 import { Empty } from './ui';
+import { Icon } from './icons';
 
 export function WorkoutView({ plan }: { plan: WorkoutPlan }) {
   const [day, setDay] = useState(todayWeekDay());
@@ -22,7 +23,7 @@ export function WorkoutView({ plan }: { plan: WorkoutPlan }) {
         })}
       </div>
       {!current || current.exercises.length === 0 ? (
-        <Empty>{current?.focus ? `${current.focus} 😌` : 'Rest day 😌'}</Empty>
+        <Empty icon={<Icon.Calendar />}>{current?.focus || 'Rest day'}</Empty>
       ) : (
         <>
           <h4 className="focus">{current.focus}</h4>

@@ -22,9 +22,45 @@
 
 ---
 
-## 2. Scale check (why the free tiers are enough)
+## 2. How much data will the gym create? (measured)
 
-A single gym has roughly 100–300 members. One year of daily attendance for 300 members is about 90,000 small rows, which comes to tens of MB. That's far below Supabase Free's **500 MB** database limit and **50,000 monthly active users**. Free-tier **capacity** isn't the problem. **Reliability and backups** are, and the next section covers them.
+We loaded this app's real database schema into PostgreSQL and filled it with **5 years of simulated gym activity**, then measured the actual size on disk, indexes included.
+
+**Simulation:** about 300 active members at any time, with 40% leaving each year and being replaced (900 member records over 5 years). Each member makes about 16 visits a month, renews every ~2 months, and logs 2 weight entries a month. The website brings in 50 enquiries a month.
+
+| Table | Rows after 5 years | Size (with indexes) | Per row |
+|---|---|---|---|
+| Attendance check-ins | 236,421 | 43 MB | ~192 bytes |
+| Progress entries | 60,394 | 5.5 MB | ~94 bytes |
+| Payments | 18,238 | 1.8 MB | ~100 bytes |
+| Memberships (renewals) | 15,762 | 1.6 MB | ~102 bytes |
+| Website enquiries | 6,000 | 0.6 MB | ~105 bytes |
+| Members (incl. photo link) | 900 | 0.5 MB | ~546 bytes |
+| Plans, programs, settings | a few | < 0.5 MB | n/a |
+| **Total** | | **≈ 53 MB** | **≈ 10.6 MB a year** |
+
+**What that means for Supabase Free (500 MB database):**
+
+| Active members | Data added per year | Years until ~450 MB* |
+|---|---|---|
+| 150 | ~5 MB | 50+ |
+| 300 | ~11 MB | ~40 |
+| 600 | ~21 MB | ~20 |
+| 1,000 | ~35 MB | ~12 |
+
+\*Leaving ~50 MB for Supabase's own internal tables.
+
+- **Members leaving and joining don't clutter the database.** A former member is one ~0.5 KB row plus their history. Even 10,000 people over the years would be about 5 MB. In the app, members whose plan ended more than 90 days ago move to a **Former** filter, so the default list stays short.
+- **85% of the data is daily check-ins.** The trainer can clean these up in one click (**Backup & data → Clean up**, older than 1 to 5 years). Members, payments, memberships and progress are never removed. Keeping only 2 years of check-ins caps the database at roughly 20 to 40 MB for a 300-member gym.
+- **The dashboard shows live usage** (**Backup & data → Storage**): the current size, the size of each table, and an estimate of years remaining.
+- **Backup file size:** 5 years of data is about 50 MB as JSON. The app saves it gzip-compressed at about **8 MB**.
+- Supabase Free also allows **50,000 monthly active users** for logins, which a single gym won't reach.
+
+**Photos (Cloudinary Free: 25 credits a month, where 1 credit = 1 GB storage or 1 GB bandwidth or 1,000 transformations):**
+- Member photos are shrunk to 640 px before upload (~60–120 KB each). **1,000 photos ≈ 0.1 GB ≈ 0.1 credit.**
+- Photos are delivered resized and compressed (`f_auto,q_auto`). A list thumbnail is ~5–10 KB, and the website's main photo ~200–300 KB.
+- For example, 3,000 website visits a month (~0.9 GB) plus app usage comes to about **1–3 credits a month, well inside 25.**
+- Photos replace the previous file (fixed names), so storage doesn't grow with every re-upload.
 
 ---
 
@@ -168,6 +204,9 @@ An installable Windows app that holds **only the trainer dashboard**: members, r
 ---
 
 ## Sources
+
+- Cloudinary credits and free plan: [Cloudinary billing docs](https://cloudinary.com/documentation/billing_and_plans), [Activepieces Cloudinary pricing 2026](https://www.activepieces.com/blog/cloudinary-pricing-2026-plans-credits-and-costs), [signed uploads](https://cloudinary.com/documentation/authentication_signatures)
+- Supabase 1,000-row response limit (why backups page through data): [Supabase fetch docs](https://supabase.co/docs/library/get), [PostgREST pagination](https://docs.postgrest.org/en/v12/references/api/pagination_count.html)
 
 - Desktop app frameworks: [Tauri vs Electron installer sizes (DoltHub)](https://dolthub.com/blog/2025-11-13-electron-vs-tauri), [Tauri 2 overview](https://www.noqta.tn/en/blog/tauri-2-desktop-apps-rust-web-technologies-2026)
 - Windows code signing prices: [SSL Insights guide](https://sslinsights.com/best-code-signing-certificate-for-windows-application/), [Microsoft code signing options](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/code-signing-options)

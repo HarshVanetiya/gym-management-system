@@ -10,6 +10,7 @@ import { DemoBanner } from '../components/DemoBanner';
 import { Icon } from '../components/icons';
 import { InstallApp } from '../components/Pwa';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { cld } from '../lib/media';
 
 const TRAINING = [
   { icon: Icon.Dumbbell, title: 'Strength training', text: 'Free weights, machines and form coaching, so you get stronger week after week.', chips: ['Free weights', 'Machines', 'Form checks'] },
@@ -78,7 +79,7 @@ export default function Home({ initial }: { initial: PublicData | null }) {
         <section className="hero">
           {site?.hero_image_url && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img className="hero-photo" src={site.hero_image_url} alt="" />
+            <img className="hero-photo" src={cld(site.hero_image_url, { w: 1920 })} alt="" />
           )}
           <div className="wrap">
             <p className="label">{area}</p>
@@ -250,7 +251,7 @@ export default function Home({ initial }: { initial: PublicData | null }) {
               <div className="gallery">
                 {site.gallery_urls.slice(0, 5).map((u, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img key={u} src={u} alt={`${name} photo ${i + 1}`} loading="lazy" />
+                  <img key={u} src={cld(u, i === 0 ? { w: 1200, h: 750 } : { w: 600, h: 600 })} alt={`${name} photo ${i + 1}`} loading="lazy" />
                 ))}
               </div>
             </div>

@@ -8,8 +8,10 @@ import { useAsync, useSite } from '../../lib/hooks';
 import type { Member, Plan, PaymentMethod, Subscription } from '../../lib/types';
 import { addDays, fmtDate, isoDate, money, reminderText, summarize, whatsappLink } from '../../lib/utils';
 import { Empty, ErrorBox, Field, Loading, Modal, StatusBadge } from '../../components/ui';
+import { Icon } from '../../components/icons';
 import { MemberForm, METHODS } from './MemberForm';
 import { ProgressPanel } from '../../components/ProgressPanel';
+import { Avatar, PhotoButton } from '../../components/Media';
 
 export default function MemberDetail() {
   const { id = '' } = useParams<{ id: string }>();
@@ -62,31 +64,40 @@ export default function MemberDetail() {
 
   return (
     <div>
-      <Link href="/admin/members" className="muted small">← All members</Link>
-      <div className="page-head">
-        <div>
-          <h1>{m.full_name} <StatusBadge status={s.status} /></h1>
-          <p className="muted">
-            {[m.phone, m.email, m.goal && `Goal: ${m.goal}`, `Joined ${fmtDate(m.joined_on)}`].filter(Boolean).join(' · ')}
-          </p>
+      <Link href="/admin/members" className="back-link"><Icon.ArrowRight width={16} height={16} style={{ transform: 'rotate(180deg)' }} /> All members</Link>
+      <div className="page-head member-head">
+        <div className="person">
+          <Avatar name={m.full_name} url={m.photo_url} size={72} />
+          <div>
+            <h1>{m.full_name} <StatusBadge status={s.status} /></h1>
+            <p className="muted">
+              {[m.phone, m.email, m.goal && `Goal: ${m.goal}`, `Joined ${fmtDate(m.joined_on)}`].filter(Boolean).join(' · ')}
+            </p>
+            <PhotoButton
+              target={{ kind: 'avatar', memberId: m.id }}
+              label={m.photo_url ? 'Change photo' : 'Add photo'}
+              className="link-btn"
+              onUploaded={async (url) => { await store.update('members', m.id, { photo_url: url }); reload(); }}
+            />
+          </div>
         </div>
         <div className="row-actions wrap">
-          {wa && <a className="btn btn-wa" href={wa} target="_blank" rel="noreferrer">WhatsApp reminder</a>}
-          <button className="btn btn-ghost" onClick={() => setModal('edit')}>Edit</button>
-          <button className="btn btn-ghost danger" onClick={removeMember}>Delete</button>
+          {wa && <a className="btn btn-wa" href={wa} target="_blank" rel="noreferrer"><Icon.Chat width={17} height={17} /> WhatsApp reminder</a>}
+          <button className="btn btn-ghost" onClick={() => setModal('edit')}><Icon.Edit width={17} height={17} /> Edit</button>
+          <button className="btn btn-ghost danger" onClick={removeMember} aria-label="Delete member"><Icon.Trash width={17} height={17} /> <span className="hide-xs">Delete</span></button>
         </div>
       </div>
 
       <div className="grid-2">
         <section className="card">
           <div className="card-head">
-            <h3>Membership</h3>
-            <button className="btn btn-sm" onClick={() => setModal('renew')}>{s.latest ? 'Renew / Change plan' : 'Start plan'}</button>
+            <h3><Icon.Calendar /> Membership</h3>
+            <button className="btn btn-sm" onClick={() => setModal('renew')}><Icon.Refresh width={16} height={16} /> {s.latest ? 'Renew' : 'Start plan'}</button>
           </div>
           {s.latest ? (
             <div className="kv">
               <div><span>Current plan</span><strong>{s.latest.plan_name}</strong></div>
-              <div><span>Valid</span><strong>{fmtDate(s.latest.start_date)} → {fmtDate(s.latest.end_date)}</strong></div>
+              <div><span>Valid</span><strong>{fmtDate(s.latest.start_date)} – {fmtDate(s.latest.end_date)}</strong></div>
               <div><span>Days left</span><strong className={s.daysLeft! < 0 ? 'text-danger' : ''}>{s.daysLeft! < 0 ? `Expired ${-s.daysLeft!} days ago` : s.daysLeft}</strong></div>
               <div><span>Billed / Paid</span><strong>{money(s.totalBilled)} / {money(s.totalPaid)}</strong></div>
               <div><span>Balance due</span><strong className={s.due > 0 ? 'text-danger' : 'text-good'}>{money(s.due)}</strong></div>
@@ -96,7 +107,7 @@ export default function MemberDetail() {
             <details className="history">
               <summary>Plan history ({data.subs.length})</summary>
               <ul className="list compact">
-                {data.subs.map((x) => <li key={x.id}><span>{x.plan_name}</span><span className="muted small">{fmtDate(x.start_date)} → {fmtDate(x.end_date)} · {money(x.price)}</span></li>)}
+                {data.subs.map((x) => <li key={x.id}><span>{x.plan_name}</span><span className="muted small">{fmtDate(x.start_date)} – {fmtDate(x.end_date)} · {money(x.price)}</span></li>)}
               </ul>
             </details>
           )}
@@ -104,15 +115,15 @@ export default function MemberDetail() {
 
         <section className="card">
           <div className="card-head">
-            <h3>Payments</h3>
-            <button className="btn btn-sm" onClick={() => setModal('pay')}>+ Record payment</button>
+            <h3><Icon.Wallet /> Payments</h3>
+            <button className="btn btn-sm" onClick={() => setModal('pay')}><Icon.Plus width={16} height={16} /> Payment</button>
           </div>
           {data.payments.length === 0 ? <Empty>No payments recorded.</Empty> : (
             <ul className="list compact">
               {data.payments.map((p) => (
                 <li key={p.id}>
                   <div><strong>{money(p.amount)}</strong> <span className="tag">{p.method}</span>{p.note && <div className="muted small">{p.note}</div>}</div>
-                  <div className="row-actions"><span className="muted small">{fmtDate(p.paid_on)}</span><button className="icon-btn" title="Delete" onClick={() => deletePayment(p.id)}>🗑</button></div>
+                  <div className="row-actions"><span className="muted small">{fmtDate(p.paid_on)}</span><button className="icon-btn" title="Delete payment" aria-label="Delete payment" onClick={() => deletePayment(p.id)}><Icon.Trash width={18} height={18} /></button></div>
                 </li>
               ))}
             </ul>
@@ -120,7 +131,7 @@ export default function MemberDetail() {
         </section>
 
         <section className="card">
-          <h3>Programs</h3>
+          <h3><Icon.Clipboard /> Programs</h3>
           <Field label="Workout plan">
             <select value={m.workout_plan_id ?? ''} onChange={(e) => assign('workout_plan_id', e.target.value)}>
               <option value="">— Not assigned —</option>
@@ -145,8 +156,8 @@ export default function MemberDetail() {
 
         <section className="card">
           <div className="card-head">
-            <h3>Attendance</h3>
-            {checkedToday ? <span className="badge badge-active">Checked in today</span> : <button className="btn btn-sm" onClick={checkIn}>Check in today</button>}
+            <h3><Icon.Check /> Attendance</h3>
+            {checkedToday ? <span className="badge badge-active"><Icon.Check width={14} height={14} /> In today</span> : <button className="btn btn-sm" onClick={checkIn}>Check in</button>}
           </div>
           <p><strong>{last30}</strong> visits in the last 30 days</p>
           <AttendanceStrip dates={data.attendance.map((a) => a.check_in)} />

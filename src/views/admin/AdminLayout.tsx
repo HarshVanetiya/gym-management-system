@@ -18,6 +18,7 @@ const LINKS = [
   { to: '/admin/plans', label: 'Plans', short: 'Plans', icon: Icon.Tag },
   { to: '/admin/programs', label: 'Workouts & Diets', short: 'Programs', icon: Icon.Clipboard },
   { to: '/admin/site', label: 'Website', short: 'Website', icon: Icon.Globe },
+  { to: '/admin/data', label: 'Backup & data', short: 'Backup', icon: Icon.Database },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -42,7 +43,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <Link href="/admin" className="brand"><span className="brand-mark">MFC</span><span>Medilife<small>Trainer</small></span></Link>
         <div className="row-actions">
           <ThemeToggle />
-          <Link href="/admin/members?new=1" className="btn btn-sm">+ Member</Link>
+          <Link href="/admin/members?new=1" className="btn btn-sm"><Icon.Plus width={16} height={16} /> Member</Link>
         </div>
       </header>
       <div className="app-shell">
@@ -56,7 +57,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="sidebar-foot">
-            <a href="/" target="_blank" rel="noreferrer">View website ↗</a>
+            <a href="/" target="_blank" rel="noreferrer" className="foot-link"><Icon.ExternalLink width={16} height={16} /> View website</a>
             <span className="muted small">{session?.email}</span>
             <div className="row-actions" style={{ justifyContent: 'space-between' }}>
               <button className="link-btn" onClick={logout}>Log out</button>
@@ -84,7 +85,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             {LINKS.filter((l) => !l.tab).map((l) => (
               <Link key={l.to} href={l.to}><l.icon /> {l.label}</Link>
             ))}
-            <a href="/" target="_blank" rel="noreferrer"><Icon.Home /> View website ↗</a>
+            <a href="/" target="_blank" rel="noreferrer"><Icon.ExternalLink /> View website</a>
             <button onClick={logout}><Icon.Logout /> Log out</button>
             <span className="who">{session?.email}</span>
             <InstallApp compact />

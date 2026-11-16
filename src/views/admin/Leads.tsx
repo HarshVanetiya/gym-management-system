@@ -7,6 +7,7 @@ import { useAsync, useSite } from '../../lib/hooks';
 import type { Lead, LeadStatus } from '../../lib/types';
 import { fmtDate, whatsappLink } from '../../lib/utils';
 import { Empty, ErrorBox, Loading } from '../../components/ui';
+import { Icon } from '../../components/icons';
 
 const STATUSES: LeadStatus[] = ['new', 'contacted', 'joined', 'lost'];
 
@@ -71,9 +72,9 @@ export default function Leads() {
                 {l.message && <p className="quote">“{l.message}”</p>}
                 <p className="muted small">Received {fmtDate(l.created_at)}</p>
                 <div className="row-actions wrap">
-                  {wa && <a className="btn btn-sm btn-wa" href={wa} target="_blank" rel="noreferrer" onClick={() => l.status === 'new' && setStatus(l, 'contacted')}>WhatsApp</a>}
-                  {l.status !== 'joined' && <button className="btn btn-sm" onClick={() => convert(l)}>Convert to member</button>}
-                  <button className="btn btn-sm btn-ghost danger" onClick={() => del(l)}>Delete</button>
+                  {wa && <a className="btn btn-sm btn-wa" href={wa} target="_blank" rel="noreferrer" onClick={() => l.status === 'new' && setStatus(l, 'contacted')}><Icon.Chat width={16} height={16} /> WhatsApp</a>}
+                  {l.status !== 'joined' && <button className="btn btn-sm" onClick={() => convert(l)}><Icon.User width={16} height={16} /> Make member</button>}
+                  <button className="btn btn-sm btn-ghost danger" onClick={() => del(l)} aria-label="Delete enquiry"><Icon.Trash width={16} height={16} /></button>
                 </div>
               </div>
             );

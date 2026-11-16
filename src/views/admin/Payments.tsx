@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useGymData } from '../../lib/gym';
 import { Empty, ErrorBox, Loading, StatCard } from '../../components/ui';
+import { Icon } from '../../components/icons';
 import { downloadFile, fmtDate, isoDate, money, toCsv } from '../../lib/utils';
 
 export default function Payments() {
@@ -40,7 +41,7 @@ export default function Payments() {
         </div>
         <div className="row-actions">
           <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} aria-label="Month" />
-          <button className="btn btn-ghost" onClick={() => downloadFile(`payments-${month}.csv`, toCsv(view.rows.map((r) => ({ date: r.paid_on, member: r.name, amount: r.amount, method: r.method, note: r.note ?? '' }))))}>Export CSV</button>
+          <button className="btn btn-ghost" onClick={() => downloadFile(`payments-${month}.csv`, toCsv(view.rows.map((r) => ({ date: r.paid_on, member: r.name, amount: r.amount, method: r.method, note: r.note ?? '' }))))}><Icon.Download width={17} height={17} /> <span className="hide-xs">Export CSV</span></button>
         </div>
       </div>
 
