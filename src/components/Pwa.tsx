@@ -19,21 +19,70 @@ export function RegisterServiceWorker() {
   return null;
 }
 
+type Platform = 'ios' | 'ios-inapp' | 'android-inapp' | 'samsung' | 'firefox-android' | 'android' | 'mac-safari' | 'desktop-firefox' | 'desktop';
+
+function detectPlatform(): Platform {
+  const ua = navigator.userAgent;
+  const ios = /iphone|ipad|ipod/i.test(ua) || (/macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
+  const inApp = /instagram|fban|fbav|fb_iab|line\/|wv\)|snapchat/i.test(ua);
+  if (ios) return inApp ? 'ios-inapp' : 'ios';
+  if (/android/i.test(ua)) {
+    if (inApp) return 'android-inapp';
+    if (/samsungbrowser/i.test(ua)) return 'samsung';
+    if (/firefox/i.test(ua)) return 'firefox-android';
+    return 'android';
+  }
+  if (/firefox/i.test(ua)) return 'desktop-firefox';
+  if (/macintosh/i.test(ua) && /safari/i.test(ua) && !/chrome|chromium|edg/i.test(ua)) return 'mac-safari';
+  return 'desktop';
+}
+
+/** Step-by-step help for browsers that don't show the automatic install pop-up. */
+function InstallSteps({ platform }: { platform: Platform }) {
+  const here = typeof window !== 'undefined' ? window.location : null;
+  switch (platform) {
+    case 'ios':
+      return <ol><li>Tap the <strong>Share</strong> button (square with an arrow) at the bottom of Safari.</li><li>Scroll down and tap <strong>Add to Home Screen</strong>.</li><li>Tap <strong>Add</strong>. The MFC icon appears on your home screen.</li></ol>;
+    case 'ios-inapp':
+      return <ol><li>This page is open inside another app (like Instagram). Tap <strong>•••</strong> and choose <strong>Open in browser</strong>.</li><li>In Safari, tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>.</li></ol>;
+    case 'android-inapp':
+      return (
+        <>
+          <ol><li>This page is open inside another app (like Instagram), which can’t install apps.</li><li>Open it in Chrome, then tap <strong>Install</strong> again.</li></ol>
+          {here && <a className="btn btn-sm" href={`intent://${here.host}${here.pathname}#Intent;scheme=https;package=com.android.chrome;end`}>Open in Chrome</a>}
+        </>
+      );
+    case 'samsung':
+      return <ol><li>Tap the <strong>menu</strong> (☰) at the bottom right.</li><li>Tap <strong>Add page to</strong>, then <strong>Home screen</strong>.</li></ol>;
+    case 'firefox-android':
+      return <ol><li>Tap the <strong>⋮</strong> menu.</li><li>Tap <strong>Install</strong> or <strong>Add to Home screen</strong>.</li></ol>;
+    case 'android':
+      return <ol><li>Tap the <strong>⋮</strong> menu at the top right of Chrome.</li><li>Tap <strong>Install app</strong> or <strong>Add to Home screen</strong>, then <strong>Install</strong>.</li></ol>;
+    case 'mac-safari':
+      return <ol><li>In the menu bar, click <strong>File</strong> → <strong>Add to Dock</strong>.</li></ol>;
+    case 'desktop-firefox':
+      return <ol><li>Firefox on computers can’t install apps. Open this page in <strong>Chrome</strong> or <strong>Edge</strong> and click Install.</li></ol>;
+    default:
+      return <ol><li>Click the <strong>install icon</strong> at the right end of the address bar,</li><li>or open the browser menu (⋮) → <strong>Install Medilife Fitness Club</strong> / <strong>Apps → Install this site as an app</strong>.</li></ol>;
+  }
+}
+
 /**
- * "Install app" button. Android/desktop Chrome: shows the native install prompt.
- * iPhone/iPad (no prompt API): shows the Share → Add to Home Screen steps.
- * Hidden when already running as an installed app.
+ * "Install app" button, always shown (unless the app is already installed).
+ * Where the browser offers it, the button opens the native install pop-up.
+ * Everywhere else (iPhone, Samsung Internet, Firefox, Instagram's in-app browser, or after the pop-up was
+ * dismissed once) it shows the steps for that browser. No Play Store or App Store needed.
  */
 export function InstallApp({ compact }: { compact?: boolean }) {
   const [evt, setEvt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [ios, setIos] = useState(false);
+  const [platform, setPlatform] = useState<Platform | null>(null);
   const [installed, setInstalled] = useState(false);
-  const [showIosHelp, setShowIosHelp] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
     const standalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone;
     setInstalled(!!standalone);
-    setIos(/iphone|ipad|ipod/i.test(navigator.userAgent));
+    setPlatform(detectPlatform());
     const onPrompt = (e: Event) => {
       e.preventDefault();
       setEvt(e as BeforeInstallPromptEvent);
@@ -47,7 +96,7 @@ export function InstallApp({ compact }: { compact?: boolean }) {
     };
   }, []);
 
-  if (installed || (!evt && !ios)) return null;
+  if (installed || !platform) return null;
 
   async function install() {
     if (evt) {
@@ -56,19 +105,20 @@ export function InstallApp({ compact }: { compact?: boolean }) {
       if (outcome === 'accepted') setInstalled(true);
       setEvt(null);
     } else {
-      setShowIosHelp((v) => !v);
+      setShowHelp((v) => !v);
     }
   }
 
   return (
-    <div className="install-card">
-      <Icon.Download />
-      <p>
-        {showIosHelp ? (
-          <>Tap <strong>Share</strong> in Safari, then <strong>Add to Home Screen</strong>.</>
-        ) : compact ? 'Install the MFC app on your phone.' : 'Add the MFC app to your home screen. It opens like a normal app, even on a weak connection.'}
-      </p>
-      <button className="btn btn-sm" onClick={install}>{showIosHelp ? 'Got it' : 'Install'}</button>
+    <div className="install-card" id="install-app">
+      <div className="install-row">
+        <Icon.Download />
+        <p>{compact ? 'Install the MFC app on this device.' : 'Install the MFC app on your phone or computer. No Play Store needed, and it opens like a normal app, even on a weak connection.'}</p>
+        <button type="button" className="btn btn-sm" onClick={install} aria-expanded={evt ? undefined : showHelp}>
+          {showHelp ? 'Close' : 'Install app'}
+        </button>
+      </div>
+      {showHelp && <div className="install-steps"><InstallSteps platform={platform} /></div>}
     </div>
   );
 }

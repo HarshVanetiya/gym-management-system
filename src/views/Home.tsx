@@ -111,6 +111,7 @@ export default function Home({ initial }: { initial: PublicData | null }) {
             {testimonials.length > 0 && <a href="#results" onClick={close}>Members</a>}
             <a href="#visit" onClick={close}>Visit</a>
             <a href="#join" onClick={close}>Book a free trial</a>
+            <a href="#install-app" onClick={close}>Install the app</a>
           </nav>
           <div className="menu-foot">
             <Link href={portalLink} onClick={close}>{portalLabel}</Link>
@@ -317,6 +318,7 @@ export default function Home({ initial }: { initial: PublicData | null }) {
             <a href="#visit">Visit</a>
             <a href="#join">Free trial</a>
             <Link href={portalLink}>{session ? 'My plan' : 'Member login'}</Link>
+            <a href="#install-app">Install the app</a>
           </nav>
           <nav className="foot-links" aria-label="Contact">
             {tel && <a href={`tel:${tel}`}>{site?.phone}</a>}

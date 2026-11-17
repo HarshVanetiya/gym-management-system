@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Medilife Fitness Club — What's included</title>
+<style>
+  @font-face { font-family: 'Serif'; src: url('../node_modules/@fontsource-variable/cormorant-garamond/files/cormorant-garamond-latin-wght-normal.woff2') format('woff2'); font-weight: 300 700; }
+  @font-face { font-family: 'Serif'; font-style: italic; src: url('../node_modules/@fontsource-variable/cormorant-garamond/files/cormorant-garamond-latin-wght-italic.woff2') format('woff2'); font-weight: 300 700; }
+  @font-face { font-family: 'Sans'; src: url('../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2'); font-weight: 100 900; }
+  @page { size: A4; margin: 0; }
+  :root { --navy: #0a1730; --ink: #0c1a33; --ink2: #33415c; --muted: #5d6780; --line: #e2e6ee; --soft: #f4f6f9; --blue: #2c5bd0; --sky: #a9c0f5; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font-family: 'Sans', system-ui, sans-serif; color: var(--ink); font-size: 10.2pt; line-height: 1.55; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page { width: 210mm; height: 297mm; padding: 18mm 18mm 16mm; position: relative; overflow: hidden; page-break-after: always; break-after: page; display: flex; flex-direction: column; }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+  .foot { margin-top: auto; padding-top: 8mm; display: flex; justify-content: space-between; font-size: 7.5pt; color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase; border-top: 1px solid var(--line); padding-top: 4mm; }
+  .eyebrow { display: flex; align-items: center; gap: 10px; font-size: 7.6pt; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blue); margin: 0 0 4mm; }
+  .eyebrow::before { content: ''; width: 22px; height: 1px; background: currentColor; }
+  h1, h2, h3 { font-family: 'Serif', Georgia, serif; font-weight: 500; margin: 0; line-height: 1.06; }
+  h2 { font-size: 30pt; margin-bottom: 4mm; }
+  h3 { font-size: 14.5pt; font-weight: 600; margin-bottom: 1.5mm; }
+  p { margin: 0 0 3mm; }
+  .lead { font-size: 11.5pt; color: var(--ink2); max-width: 150mm; }
+  .muted { color: var(--muted); }
+  ul.ticks { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.6mm; }
+  ul.ticks li { padding-left: 5mm; position: relative; }
+  ul.ticks li::before { content: ''; position: absolute; left: 0; top: 0.62em; width: 2.2mm; height: 1px; background: var(--blue); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm 9mm; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; }
+  .block { border-top: 1px solid var(--line); padding-top: 3.5mm; }
+  .shot { border: 1px solid var(--line); border-radius: 2mm; overflow: hidden; background: #fff; }
+  .shot img { display: block; width: 100%; height: auto; }
+  .phones { display: flex; gap: 5mm; justify-content: center; }
+  .phone { width: 42mm; border: 2.2mm solid #0b0f19; border-radius: 7mm; overflow: hidden; }
+  .phone img { display: block; width: 100%; height: auto; aspect-ratio: 390 / 664; object-fit: cover; object-position: top left; }
+  .cap { font-size: 7.6pt; color: var(--muted); text-align: center; margin-top: 2mm; letter-spacing: 0.12em; text-transform: uppercase; }
+  table { width: 100%; border-collapse: collapse; font-size: 9.4pt; }
+  th, td { text-align: left; padding: 2.4mm 2.5mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 7.4pt; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  td.yes { color: var(--ink); } td.no { color: var(--muted); }
+  .note { background: var(--soft); border-left: 2px solid var(--blue); padding: 3mm 4mm; font-size: 9.4pt; color: var(--ink2); }
+  .num { font-family: 'Serif', Georgia, serif; font-size: 20pt; font-weight: 500; line-height: 1; color: var(--blue); }
+
+  /* cover */
+  .cover { background: var(--navy); color: #fff; }
+  .cover .foot { border-color: rgba(255,255,255,0.15); color: rgba(255,255,255,0.6); }
+  .lockup { display: inline-grid; justify-items: center; line-height: 1; }
+  .lockup b { font-family: 'Serif', Georgia, serif; font-weight: 600; font-size: 17pt; letter-spacing: 0.22em; margin-right: -0.22em; }
+  .lockup span { font-size: 6pt; font-weight: 600; letter-spacing: 0.46em; margin-right: -0.46em; margin-top: 1.6mm; opacity: 0.8; }
+  .cover h1 { font-size: 46pt; margin: 22mm 0 6mm; max-width: 150mm; }
+  .cover .lead { color: rgba(255,255,255,0.75); }
+  .cover .eyebrow { color: var(--sky); }
+  .toc { margin-top: 12mm; display: grid; grid-template-columns: 1fr 1fr; gap: 0 10mm; max-width: 150mm; }
+  .toc div { display: flex; gap: 4mm; padding: 2.4mm 0; border-bottom: 1px solid rgba(255,255,255,0.14); font-size: 9.6pt; }
+  .toc i { font-style: normal; color: var(--sky); font-variant-numeric: tabular-nums; }
+  .cover-phones { display: flex; gap: 6mm; margin-top: auto; margin-bottom: 4mm; }
+  .cover-phones .phone { width: 44mm; border-color: #1f2a40; }
+  .cover .shot { position: absolute; right: -30mm; bottom: 36mm; width: 150mm; border: none; box-shadow: 0 20mm 30mm -16mm rgba(0,0,0,0.6); opacity: 0.95; }
+  .steps { counter-reset: s; list-style: none; padding: 0; margin: 0; display: grid; gap: 1.6mm; }
+  .steps li { counter-increment: s; padding-left: 6mm; position: relative; }
+  .steps li::before { content: counter(s); position: absolute; left: 0; color: var(--blue); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- 1 · cover -->
+<section class="page cover">
+  <div class="lockup"><b>MEDILIFE</b><span>FITNESS CLUB</span></div>
+  <h1>Website, trainer dashboard and member app</h1>
+  <p class="eyebrow">What’s included · Kashipuri Colony, Udaipur</p>
+  <p class="lead">One system to run the gym, coach members and win new ones. This document lists everything the gym gets: what visitors see, what the trainer manages, what members use on their phones, and who can see what.</p>
+  <div class="toc">
+    <div><i>01</i>Everything at a glance</div>
+    <div><i>02</i>Portfolio website</div>
+    <div><i>03</i>Trainer dashboard</div>
+    <div><i>04</i>Member app</div>
+    <div><i>05</i>App without Play Store</div>
+    <div><i>06</i>Access, data and running costs</div>
+  </div>
+  <div class="cover-phones">
+    <div class="phone"><img src="../demo-slides/assets/site-m-hero.jpg" alt=""></div>
+    <div class="phone"><img src="../demo-slides/assets/app-home.jpg" alt=""></div>
+    <div class="phone"><img src="../demo-slides/assets/app-workout.jpg" alt=""></div>
+  </div>
+  <div class="foot"><span>Prepared by Harsh Vanetia</span><span>November 2026</span></div>
+</section>
+
+<!-- 2 · at a glance -->
+<section class="page">
+  <p class="eyebrow">01 · At a glance</p>
+  <h2>Four parts, one system</h2>
+  <p class="lead">Everything shares one database, so a member added by the trainer, a payment recorded at the desk or a diet changed in the dashboard shows up everywhere straight away.</p>
+  <div class="grid2" style="margin-top:6mm">
+    <div class="block"><h3>Portfolio website</h3><p class="muted">The gym’s public face. Built for phones first, found on Google, with a free-trial form that sends enquiries straight to the trainer.</p></div>
+    <div class="block"><h3>Trainer dashboard</h3><p class="muted">Members, onboarding, renewals, offline payments and dues, attendance, workouts and diets, enquiries, website content and backups.</p></div>
+    <div class="block"><h3>Member app</h3><p class="muted">Each member logs in to see days left, dues, today’s workout, their diet, progress and payment history, and can update their own photo and phone number.</p></div>
+    <div class="block"><h3>Installable app, no Play Store</h3><p class="muted">The website, member app and dashboard install on Android phones, iPhones and computers straight from the browser, with an install button for every phone.</p></div>
+  </div>
+  <div style="margin-top:9mm" class="grid3">
+    <div class="block"><div class="num">₹0</div><p class="muted">monthly running cost for a gym of a few hundred members (free plans).</p></div>
+    <div class="block"><div class="num">3</div><p class="muted">kinds of access: visitor, member and trainer, each seeing only what they should.</p></div>
+    <div class="block"><div class="num">1 click</div><p class="muted">full backup of all gym data, and restore into a new account when moving.</p></div>
+  </div>
+  <div class="foot"><span>Medilife Fitness Club</span><span>2</span></div>
+</section>
+
+<!-- 3 · website -->
+<section class="page">
+  <p class="eyebrow">02 · Portfolio website</p>
+  <h2>A calm, classy website that brings in members</h2>
+  <div class="shot" style="margin:3mm 0 7mm"><img src="../demo-slides/assets/site-hero.jpg" alt="Website"></div>
+  <div class="grid2">
+    <div>
+      <h3>What visitors see</h3>
+      <ul class="ticks">
+        <li>The gym’s name, tagline and a short introduction, with the gym’s own logo and photos.</li>
+        <li>Live <strong>“Open now · until 10 PM”</strong> status in India time, and the weekly hours with today highlighted.</li>
+        <li>Training offered: strength, weight loss, personal training and diet plans.</li>
+        <li>Member reviews and an “Inside the gym” photo gallery.</li>
+        <li>Address, one-tap directions, call, WhatsApp and Instagram.</li>
+        <li>No prices on the website. Visitors book a free trial or ask for a call back.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>How it works for the gym</h3>
+      <ul class="ticks">
+        <li><strong>Free-trial form</strong>: name, mobile, goal and preferred time. It lands in the dashboard as an enquiry.</li>
+        <li>Built for phones first, with a simple menu and the “Free trial” button always in reach.</li>
+        <li>Light and dark mode.</li>
+        <li>Shown to Google as a local business (name, hours, phone, address).</li>
+        <li>The trainer edits all text, the logo, the main photo and the gallery from the dashboard. No developer needed.</li>
+        <li>Fast on weak mobile data. Photos are resized automatically.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span>Medilife Fitness Club</span><span>3</span></div>
+</section>
+
+<!-- 4 · dashboard -->
+<section class="page">
+  <p class="eyebrow">03 · Trainer dashboard</p>
+  <h2>Run the whole gym from one screen</h2>
+  <div class="shot" style="margin:2mm 0 6mm"><img src="../demo-slides/assets/dashboard.jpg" alt="Trainer dashboard"></div>
+  <div class="grid3" style="gap:5mm 7mm">
+    <div class="block"><h3>Daily overview</h3><p class="muted">Active members, memberships expiring this week, pending dues, money collected this month, today’s check-ins and new enquiries.</p></div>
+    <div class="block"><h3>Member onboarding</h3><p class="muted">Add a member with contact details, goal and notes, pick a plan and record the first payment in one step. Turn a website enquiry into a member with one click.</p></div>
+    <div class="block"><h3>Member app access</h3><p class="muted">Save the member’s email and they sign up with it. Their plan, diet and payments appear automatically. The dashboard shows who has linked their login.</p></div>
+    <div class="block"><h3>Plans and renewals</h3><p class="muted">Set up plans (monthly, quarterly, personal training…). Renew in a few taps, with expiry and “expired” lists so no renewal is missed.</p></div>
+    <div class="block"><h3>Offline payments</h3><p class="muted">Record cash or UPI payments with a reference note. Dues are tracked per member, with a monthly report and CSV export.</p></div>
+    <div class="block"><h3>WhatsApp reminders</h3><p class="muted">One tap opens WhatsApp with a ready-written renewal or dues reminder, including the gym’s UPI ID.</p></div>
+    <div class="block"><h3>Workouts and diets</h3><p class="muted">Weekly workout templates (exercises, sets, reps, notes) and diet templates (meals, times, calories). Assign them to members, and change a template once to update everyone on it.</p></div>
+    <div class="block"><h3>Attendance</h3><p class="muted">Quick check-in by name or phone number, and each member’s visit history.</p></div>
+    <div class="block"><h3>Enquiries, website and backup</h3><p class="muted">Enquiries list with status. Website editor for text, logo and photos. Members CSV export, full backup and restore, and storage usage.</p></div>
+  </div>
+  <div class="foot"><span>Medilife Fitness Club</span><span>4</span></div>
+</section>
+
+<!-- 5 · member app -->
+<section class="page">
+  <p class="eyebrow">04 · Member app</p>
+  <h2>Every member’s plan, in their pocket</h2>
+  <p class="lead">Members log in with their own email and see only their own information.</p>
+  <div class="phones" style="margin:6mm 0 4mm">
+    <figure style="margin:0"><div class="phone"><img src="../demo-slides/assets/app-home.jpg" alt=""></div><div class="cap">Membership</div></figure>
+    <figure style="margin:0"><div class="phone"><img src="../demo-slides/assets/app-workout.jpg" alt=""></div><div class="cap">Workout</div></figure>
+    <figure style="margin:0"><div class="phone"><img src="../demo-slides/assets/app-diet.jpg" alt=""></div><div class="cap">Diet</div></figure>
+    <figure style="margin:0"><div class="phone"><img src="../demo-slides/assets/app-progress.jpg" alt=""></div><div class="cap">Progress</div></figure>
+  </div>
+  <div class="grid2" style="margin-top:4mm">
+    <ul class="ticks">
+      <li><strong>Membership card</strong>: plan, start and end date, days left, and visits in the last 30 days.</li>
+      <li><strong>Dues</strong>: pending amount with the gym’s UPI ID, or pay cash at the desk.</li>
+      <li><strong>Workout schedule</strong>: the exercises, sets and reps for each day of the week.</li>
+    </ul>
+    <ul class="ticks">
+      <li><strong>Diet plan</strong>: meals with times and portions, set by the coach.</li>
+      <li><strong>Progress</strong>: log body weight and see the trend on a chart.</li>
+      <li><strong>Payments</strong> history, and a <strong>profile</strong> where members add their photo and mobile number.</li>
+    </ul>
+  </div>
+  <div class="foot"><span>Medilife Fitness Club</span><span>5</span></div>
+</section>
+
+<!-- 6 · PWA -->
+<section class="page">
+  <p class="eyebrow">05 · App without Play Store</p>
+  <h2>Installs like an app, straight from the website</h2>
+  <p class="lead">The system is a <strong>Progressive Web App (PWA)</strong>. Members and the trainer install it from the browser on Android, iPhone or a computer. There is no Play Store or App Store listing, no store fees and no waiting for approval.</p>
+  <div class="grid2" style="margin-top:5mm">
+    <div class="block">
+      <h3>What members get</h3>
+      <ul class="ticks">
+        <li>An MFC icon on the home screen that opens full screen, like any app.</li>
+        <li>Opens on weak connections. Pages already visited load from the phone.</li>
+        <li>Always up to date. New features arrive without re-installing.</li>
+        <li>Takes almost no storage compared with a store app.</li>
+        <li>The installed app opens straight to “My plan”. The trainer’s opens to the dashboard.</li>
+      </ul>
+    </div>
+    <div class="block">
+      <h3>An “Install app” button for every phone</h3>
+      <p class="muted">Some phones show an automatic install pop-up and many don’t: iPhones, Samsung Internet, Firefox, the Instagram browser, or after someone closes the pop-up once. So the website, the member app and the dashboard always show an <strong>Install app</strong> button. It opens the install pop-up where the phone supports it, and otherwise shows the exact steps for that phone.</p>
+    </div>
+  </div>
+  <table style="margin-top:6mm">
+    <tr><th style="width:28%">Device</th><th>How it installs</th></tr>
+    <tr><td>Android · Chrome</td><td>Tap <strong>Install app</strong> → Install. Or ⋮ menu → Install app.</td></tr>
+    <tr><td>Android · Samsung Internet</td><td>Menu ☰ → Add page to → Home screen (the button shows these steps).</td></tr>
+    <tr><td>iPhone / iPad</td><td>Safari → Share → Add to Home Screen (the button shows these steps).</td></tr>
+    <tr><td>Opened from Instagram</td><td>The button offers “Open in Chrome” (Android), or explains Open in browser (iPhone), then install.</td></tr>
+    <tr><td>Computer · Chrome / Edge</td><td>Install icon in the address bar, or the Install app button.</td></tr>
+    <tr><td>Mac · Safari</td><td>File → Add to Dock.</td></tr>
+  </table>
+  <p class="note" style="margin-top:6mm">Good to know: the app is not searchable in the Play Store. Members install it from the gym’s website link (share it on Instagram and WhatsApp). On iPhone it must be installed from Safari.</p>
+  <div class="foot"><span>Medilife Fitness Club</span><span>6</span></div>
+</section>
+
+<!-- 7 · access, data, costs -->
+<section class="page">
+  <p class="eyebrow">06 · Access, data and running costs</p>
+  <h2>Who can see what</h2>
+  <table style="margin-bottom:7mm">
+    <tr><th style="width:34%">Feature</th><th>Visitor</th><th>Member</th><th>Trainer (admin)</th></tr>
+    <tr><td>Website, free-trial form</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+    <tr><td>Own membership, dues, payments</td><td class="no">—</td><td class="yes">Own only</td><td class="yes">All members</td></tr>
+    <tr><td>Workout, diet, progress</td><td class="no">—</td><td class="yes">Own only</td><td class="yes">All members</td></tr>
+    <tr><td>Own photo and phone number</td><td class="no">—</td><td class="yes">Can edit</td><td class="yes">Can edit</td></tr>
+    <tr><td>Members, plans, payments, attendance</td><td class="no">—</td><td class="no">—</td><td class="yes">Full control</td></tr>
+    <tr><td>Enquiries, website editor, backup</td><td class="no">—</td><td class="no">—</td><td class="yes">Full control</td></tr>
+  </table>
+  <div class="grid2">
+    <div class="block">
+      <h3>Data and safety</h3>
+      <ul class="ticks">
+        <li>Secure email and password login. Access rules are enforced by the database itself, so one member can never open another member’s data.</li>
+        <li>One-click backup file of all gym data, and restore into a new account if the gym moves.</li>
+        <li>A clean-up tool removes old check-ins and closed enquiries to keep storage small.</li>
+        <li>Measured: about 11 MB of data a year for 300 members, against 500 MB on the free plan.</li>
+      </ul>
+    </div>
+    <div class="block">
+      <h3>Running costs</h3>
+      <ul class="ticks">
+        <li>Database and logins (Supabase), hosting (Netlify) and photos (Cloudinary): <strong>free plans</strong>.</li>
+        <li>Domain name: about <strong>₹900–1,500 a year</strong> (.in ≈ ₹899, .com ≈ ₹1,499 at renewal).</li>
+        <li>No payment-gateway fees: payments are cash or UPI at the desk.</li>
+        <li>Optional later: online payments, automatic WhatsApp messages, QR check-in, and an offline desktop version of the dashboard.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="block" style="margin-top:6mm">
+    <h3>What we need from the gym to go live</h3>
+    <p class="muted">Logo, 6–10 photos (gym floor, equipment, trainer), opening hours, phone and WhatsApp number, UPI ID, membership plans, and a few real member reviews.</p>
+  </div>
+  <div class="foot"><span>Medilife Fitness Club</span><span>7</span></div>
+</section>
+
+</body>
+</html>
