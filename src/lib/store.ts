@@ -74,16 +74,16 @@ function supabaseStore(sb: SupabaseClient): Store {
       return data as never;
     },
     async insert(table, row) {
-      const { data, error } = await sb.from(table).insert(row).select().single();
+      const { data, error } = await sb.from(table).insert(row as never).select().single();
       fail(error);
       return data as never;
     },
     async insertQuiet(table, row) {
-      const { error } = await sb.from(table).insert(row);
+      const { error } = await sb.from(table).insert(row as never);
       fail(error);
     },
     async update(table, id, patch) {
-      const { data, error } = await sb.from(table).update(patch).eq('id', id).select().single();
+      const { data, error } = await sb.from(table).update(patch as never).eq('id', id).select().single();
       fail(error);
       return data as never;
     },

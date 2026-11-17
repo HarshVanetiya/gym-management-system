@@ -3,10 +3,17 @@
 Built for **Medilife Fitness Club (MFC), Kashipuri Colony, Udaipur**. Designed mobile-first and installable as an app (PWA).
 
 **Design.** Two palettes, each with light and dark versions, defined as CSS variables at the top of `src/app/globals.css`:
-- Website and login page: black, prussian blue `#14213d`, orange `#fca311`, alabaster grey `#e5e5e5`, white.
-- Dashboards (trainer dashboard, member app): neutral greys with hairline borders and no shadows, near-black buttons, and colour only for status. The brand orange appears in the logo mark and the membership meter.
+- Website and login page: **Medilife blue**. Navy `#071a44`, royal blue `#1a4bd2`, sky `#8fb0ff`, ice `#e6edff` and white.
+  The mark is a blue 20 kg bumper plate with the club name moulded into the rim (`src/components/Brand.tsx`); a 20 kg
+  plate is blue in competition weightlifting. When the gym uploads its own logo (Dashboard → Website → Logo), the
+  logo replaces the plate and name in the website header and footer.
+- Dashboards (trainer dashboard, member app): neutral greys with hairline borders and no shadows, near-black buttons, and colour only for status. Brand blue appears in the logo mark and the membership card.
 
-Type: Manrope + Inter + JetBrains Mono, with Cormorant Garamond italics for accents. All fonts are bundled, so they also work offline.
+Type: Archivo on the website (condensed for headlines and prices, expanded for labels), Inter in the dashboards, JetBrains Mono for numbers. All fonts are bundled, so they also work offline.
+
+The website also works things out from the gym's own data: whether the gym is **open right now** (India time, read
+from the opening-hours text, `src/lib/hours.ts`), today's hours, the price **per month** of each plan and how much a
+longer plan saves, with the cheapest per-month plan marked "Best value".
 
 A complete web system for a personal trainer / small gym, built with **Next.js (React) + Supabase**.
 The public website is rendered on the server, so search engines see the full page and the gym shows up as a local business (structured data).
@@ -64,7 +71,7 @@ the member's page.
 
 ## Photos on Cloudinary
 
-Member photos and the website's main photo and gallery are stored on **Cloudinary**, not in Supabase.
+Member photos and the website's logo, main photo and gallery are stored on **Cloudinary**, not in Supabase.
 
 1. Create a free Cloudinary account. The dashboard shows the **cloud name**, **API key** and **API secret**.
 2. Add them to `.env` (and to your host's environment variables):
@@ -72,11 +79,12 @@ Member photos and the website's main photo and gallery are stored on **Cloudinar
 3. That's it. No upload preset is needed.
 
 How it works:
-- **Smaller uploads:** the browser shrinks each photo first (members 640 px, gallery 1600 px, main photo 2000 px).
+- **Smaller uploads:** the browser shrinks each photo first (members 640 px, logo 800 px, gallery 1600 px, main photo 2000 px).
+  Logos keep their see-through background (PNG), and SVG logos are uploaded as they are.
 - **Signed uploads:** `/api/upload-signature` checks who is logged in, then signs the upload. The API secret never
   reaches the browser.
 - **Who can upload what:** members can only replace their own photo. The trainer can upload member photos and website photos.
-- **No piling up:** each photo has a fixed slot (`mfc/members/<member id>`, `mfc/site/hero`, `mfc/site/gallery-1…5`),
+- **No piling up:** each photo has a fixed slot (`mfc/members/<member id>`, `mfc/site/logo`, `mfc/site/hero`, `mfc/site/gallery-1…5`),
   so a new upload replaces the old file.
 - **Smaller downloads:** photos are shown through Cloudinary transformations (`f_auto,q_auto` plus the exact size needed).
 
@@ -130,8 +138,9 @@ The site is a Progressive Web App:
 - The installed app opens on **My plan** (`/me`); trainers are sent to their dashboard after login.
 - Works on a weak connection: pages and fonts are cached by `public/sw.js`; member data is always fetched live.
 
-Before launch, fill in the real details under **Dashboard → Website**: phone, WhatsApp, hours, plan prices,
-a main photo and gallery photos (paste photo links), and real member reviews. Fields left empty are hidden on the site.
+Before launch, fill in the real details under **Dashboard → Website**: the gym's logo, phone, WhatsApp, opening hours
+(e.g. `Mon–Sat 5:30 AM – 10 PM · Sun 7 AM – 12 PM`), plan prices, a main photo and gallery photos, and real member
+reviews. Fields left empty are hidden on the site. The sample reviews are labelled "Sample review" until replaced.
 
 ## Reliability extras (recommended)
 

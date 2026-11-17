@@ -1,12 +1,12 @@
 import { store } from './store';
 
-export type UploadTarget = { kind: 'avatar'; memberId?: string } | { kind: 'hero' } | { kind: 'gallery'; slot: number };
+export type UploadTarget = { kind: 'avatar'; memberId?: string } | { kind: 'hero' } | { kind: 'logo' } | { kind: 'gallery'; slot: number };
 
-const MAX_SIDE: Record<UploadTarget['kind'], number> = { avatar: 640, hero: 2000, gallery: 1600 };
+const MAX_SIDE: Record<UploadTarget['kind'], number> = { avatar: 640, hero: 2000, gallery: 1600, logo: 800 };
 export const cloudinaryConfigured = Boolean(process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME);
 
 /** Shrinks a photo in the browser before upload (saves data on phones and Cloudinary credits). */
-export async function shrinkImage(file: File, maxSide: number, quality = 0.85): Promise<Blob> {
+export async function shrinkImage(file: File, maxSide: number, quality = 0.85, type = 'image/jpeg'): Promise<Blob> {
   if (!file.type.startsWith('image/')) throw new Error('Please choose a photo (JPG, PNG or WebP).');
   if (file.size > 25 * 1024 * 1024) throw new Error('That photo is too large (over 25 MB).');
   const bitmap = await createImageBitmap(file).catch(() => null);
@@ -19,7 +19,7 @@ export async function shrinkImage(file: File, maxSide: number, quality = 0.85): 
   canvas.height = h;
   canvas.getContext('2d')!.drawImage(bitmap, 0, 0, w, h);
   bitmap.close();
-  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Could not read the photo.'))), 'image/jpeg', quality));
+  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Could not read the photo.'))), type, quality));
 }
 
 const blobToDataUrl = (b: Blob) =>
@@ -36,10 +36,13 @@ const blobToDataUrl = (b: Blob) =>
  * - Demo mode: a small copy is kept in the browser instead.
  */
 export async function uploadImage(file: File, target: UploadTarget): Promise<string> {
-  if (store.mode === 'demo') return blobToDataUrl(await shrinkImage(file, 360, 0.78));
+  // Logos keep their transparency (PNG), and SVG logos are uploaded as they are.
+  const isLogo = target.kind === 'logo';
+  const isSvg = file.type === 'image/svg+xml';
+  if (store.mode === 'demo') return isLogo && isSvg ? blobToDataUrl(file) : blobToDataUrl(await shrinkImage(file, isLogo ? 480 : 360, 0.78, isLogo ? 'image/png' : 'image/jpeg'));
   if (!cloudinaryConfigured) throw new Error('Photo uploads are not set up yet. Add the Cloudinary keys (see README).');
 
-  const blob = await shrinkImage(file, MAX_SIDE[target.kind]);
+  const blob = isLogo && isSvg ? file : await shrinkImage(file, MAX_SIDE[target.kind], 0.85, isLogo ? 'image/png' : 'image/jpeg');
   const token = await store.auth.getAccessToken();
   const signRes = await fetch('/api/upload-signature', {
     method: 'POST',
@@ -50,7 +53,7 @@ export async function uploadImage(file: File, target: UploadTarget): Promise<str
   if (!signRes.ok) throw new Error(sig.error ?? 'Could not start the upload.');
 
   const form = new FormData();
-  form.append('file', blob, 'photo.jpg');
+  form.append('file', blob, isLogo ? (isSvg ? 'logo.svg' : 'logo.png') : 'photo.jpg');
   form.append('api_key', sig.apiKey);
   form.append('timestamp', String(sig.timestamp));
   form.append('signature', sig.signature);
@@ -63,15 +66,4 @@ export async function uploadImage(file: File, target: UploadTarget): Promise<str
   return res.secure_url as string;
 }
 
-/**
- * Asks Cloudinary for a right-sized, auto-format (WebP/AVIF) copy of an image.
- * Non-Cloudinary URLs (demo photos, pasted links) are returned unchanged.
- */
-export function cld(url: string | null | undefined, opts: { w: number; h?: number; face?: boolean }): string | undefined {
-  if (!url) return undefined;
-  if (!url.includes('res.cloudinary.com') || !url.includes('/image/upload/')) return url;
-  const t = ['f_auto', 'q_auto', `w_${opts.w}`];
-  if (opts.h) t.push(`h_${opts.h}`, 'c_fill', opts.face ? 'g_face' : 'g_auto');
-  else t.push('c_limit');
-  return url.replace('/image/upload/', `/image/upload/${t.join(',')}/`);
-}
+export { cld } from './cld';

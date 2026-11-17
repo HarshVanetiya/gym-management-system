@@ -9,7 +9,7 @@ import { Icon } from '../../components/icons';
 import { PhotoButton } from '../../components/Media';
 import { cld } from '../../lib/media';
 
-type TextKey = Exclude<keyof SiteSettings, 'id' | 'years_experience' | 'clients_trained' | 'certifications' | 'gallery_urls' | 'tagline_hi' | 'hero_image_url'>;
+type TextKey = Exclude<keyof SiteSettings, 'id' | 'years_experience' | 'clients_trained' | 'certifications' | 'gallery_urls' | 'tagline_hi' | 'hero_image_url' | 'logo_url'>;
 const TEXT_FIELDS: [TextKey, string, string?][] = [
   ['gym_name', 'Gym name'],
   ['trainer_name', 'Trainer name'],
@@ -46,15 +46,17 @@ export default function SiteEditor() {
   if (!f) return site.error ? <ErrorBox error={site.error} /> : <Loading />;
 
   /** Photos save straight away, so an upload is never lost if the form isn't submitted. */
-  async function savePhotos(patch: { hero_image_url?: string | null; gallery?: (string | null)[] }) {
+  async function savePhotos(patch: { hero_image_url?: string | null; logo_url?: string | null; gallery?: (string | null)[] }) {
     setErr(null);
     try {
       const nextGallery = patch.gallery ?? gallery;
       await store.update('site_settings', 1, {
         ...(patch.hero_image_url !== undefined ? { hero_image_url: patch.hero_image_url } : {}),
+        ...(patch.logo_url !== undefined ? { logo_url: patch.logo_url } : {}),
         gallery_urls: nextGallery.filter((u): u is string => Boolean(u)),
       });
       if (patch.hero_image_url !== undefined) setF((cur) => (cur ? { ...cur, hero_image_url: patch.hero_image_url ?? null } : cur));
+      if (patch.logo_url !== undefined) setF((cur) => (cur ? { ...cur, logo_url: patch.logo_url ?? null } : cur));
       setGallery(nextGallery);
       invalidateSite();
       setMsg('Photo saved. Your website is updated.');
@@ -90,16 +92,32 @@ export default function SiteEditor() {
       </div>
       <section className="card photos-card">
         <div className="card-head"><h3><Icon.Camera /> Photos</h3><span className="muted small">Stored on Cloudinary and resized automatically</span></div>
+        <div className="photo-slot logo-slot">
+          <div className="thumb">
+            {f.logo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={cld(f.logo_url, { w: 480 })} alt="Logo" />
+            ) : <span className="muted small">No logo yet. The website shows the blue MFC plate and the gym name.</span>}
+          </div>
+          <div>
+            <strong>Logo</strong>
+            <p className="muted small">Shown in the website header and footer. A PNG with a see-through background, or an SVG, looks sharpest.</p>
+            <div className="row-actions wrap">
+              <PhotoButton target={{ kind: 'logo' }} label={f.logo_url ? 'Replace' : 'Upload'} onUploaded={(url) => savePhotos({ logo_url: url })} />
+              {f.logo_url && <button type="button" className="btn btn-sm btn-ghost danger" onClick={() => savePhotos({ logo_url: null })}><Icon.Trash width={16} height={16} /> Remove</button>}
+            </div>
+          </div>
+        </div>
         <div className="photo-slot hero-slot">
           <div className="thumb">
             {f.hero_image_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={cld(f.hero_image_url, { w: 640 })} alt="Main photo" />
-            ) : <span className="muted small">No main photo. The website shows the MFC artwork.</span>}
+            ) : <span className="muted small">No main photo. The website shows the blue MFC plate.</span>}
           </div>
           <div>
             <strong>Main photo</strong>
-            <p className="muted small">Shown behind the big title at the top of the website. A wide photo of the gym floor works best.</p>
+            <p className="muted small">Shown next to the gym name at the top of the website. A clear photo of the gym floor or the trainer works best.</p>
             <div className="row-actions wrap">
               <PhotoButton target={{ kind: 'hero' }} label={f.hero_image_url ? 'Replace' : 'Upload'} onUploaded={(url) => savePhotos({ hero_image_url: url })} />
               {f.hero_image_url && <button type="button" className="btn btn-sm btn-ghost danger" onClick={() => savePhotos({ hero_image_url: null })}><Icon.Trash width={16} height={16} /> Remove</button>}

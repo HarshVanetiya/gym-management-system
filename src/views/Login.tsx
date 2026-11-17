@@ -7,6 +7,7 @@ import { DEMO_ADMIN_EMAIL, store } from '../lib/store';
 import { useAuth } from '../lib/hooks';
 import { DemoBanner } from '../components/DemoBanner';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { Plate, Wordmark } from '../components/Brand';
 
 export default function Login() {
   const { session, refresh } = useAuth();
@@ -60,7 +61,7 @@ export default function Login() {
       <DemoBanner />
       <div className="auth-wrap">
         <div className="row-actions" style={{ justifyContent: 'space-between' }}>
-          <Link href="/" className="brand auth-brand"><span className="brand-mark">MFC</span><span>Medilife<small>Fitness Club</small></span></Link>
+          <Link href="/" className="brand-link auth-brand" aria-label="Medilife Fitness Club home"><Plate className="mini-plate" /><Wordmark /></Link>
           <ThemeToggle />
         </div>
         <form className="card auth-card" onSubmit={submit}>

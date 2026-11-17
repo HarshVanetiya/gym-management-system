@@ -4,7 +4,7 @@ import { signCloudinaryParams } from '../../../lib/cloudinary-sign';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-type Target = { kind: 'avatar'; memberId?: string } | { kind: 'hero' } | { kind: 'gallery'; slot: number };
+type Target = { kind: 'avatar'; memberId?: string } | { kind: 'hero' } | { kind: 'logo' } | { kind: 'gallery'; slot: number };
 
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -47,6 +47,8 @@ export async function POST(req: Request) {
     }
   } else if (target?.kind === 'hero' && isAdmin) {
     publicId = 'mfc/site/hero';
+  } else if (target?.kind === 'logo' && isAdmin) {
+    publicId = 'mfc/site/logo';
   } else if (target?.kind === 'gallery' && isAdmin && Number.isInteger(target.slot) && target.slot >= 1 && target.slot <= 5) {
     publicId = `mfc/site/gallery-${target.slot}`;
   }

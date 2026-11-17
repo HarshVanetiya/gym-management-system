@@ -25,6 +25,7 @@ export interface SiteSettings {
   certifications: string[] | null;
   tagline_hi: string | null;
   hero_image_url: string | null;
+  logo_url?: string | null;
   gallery_urls: string[] | null;
   upi_id: string | null;
 }

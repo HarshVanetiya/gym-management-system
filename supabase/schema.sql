@@ -43,6 +43,7 @@ create table if not exists public.site_settings (
 alter table public.site_settings add column if not exists tagline_hi     text;          -- Hindi tagline shown under the hero
 alter table public.site_settings add column if not exists hero_image_url text;          -- photo inside the hero arch
 alter table public.site_settings add column if not exists gallery_urls   text[] default '{}';
+alter table public.site_settings add column if not exists logo_url       text;          -- the gym's logo (Cloudinary)
 insert into public.site_settings (id) values (1) on conflict do nothing;
 
 create table if not exists public.plans (

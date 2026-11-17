@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Plate, Wordmark } from '../../components/Brand';
 
 export const metadata: Metadata = { title: 'Offline', robots: { index: false } };
 
@@ -7,7 +8,7 @@ export default function Offline() {
   return (
     <div className="auth-page">
       <div className="auth-wrap">
-        <span className="brand"><span className="brand-mark">MFC</span>Medilife Fitness Club</span>
+        <span className="brand-link auth-brand"><Plate className="mini-plate" /><Wordmark /></span>
         <div className="card auth-card">
           <p className="label">No connection</p>
           <h2>You’re offline</h2>

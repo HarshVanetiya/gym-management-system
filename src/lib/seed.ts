@@ -166,6 +166,7 @@ export function buildSeed(): { [K in TableName]: Tables[K][] } {
       upi_id: 'medilife@upi',
       tagline_hi: null,
       hero_image_url: null,
+      logo_url: null,
       gallery_urls: [],
     }],
     plans,
