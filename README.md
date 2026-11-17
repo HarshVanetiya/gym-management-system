@@ -3,17 +3,17 @@
 Built for **Medilife Fitness Club (MFC), Kashipuri Colony, Udaipur**. Designed mobile-first and installable as an app (PWA).
 
 **Design.** Two palettes, each with light and dark versions, defined as CSS variables at the top of `src/app/globals.css`:
-- Website and login page: **Medilife blue**. Navy `#071a44`, royal blue `#1a4bd2`, sky `#8fb0ff`, ice `#e6edff` and white.
-  The mark is a blue 20 kg bumper plate with the club name moulded into the rim (`src/components/Brand.tsx`); a 20 kg
-  plate is blue in competition weightlifting. When the gym uploads its own logo (Dashboard → Website → Logo), the
-  logo replaces the plate and name in the website header and footer.
-- Dashboards (trainer dashboard, member app): neutral greys with hairline borders and no shadows, near-black buttons, and colour only for status. Brand blue appears in the logo mark and the membership card.
+- Website and login page: quiet **navy and white** (navy `#0a1730`, one muted blue `#2c5bd0` for small accents), thin
+  lines instead of boxes, and the club name set as a lockup: "MEDILIFE" in spaced serif capitals over a small
+  "FITNESS CLUB" (`src/components/Brand.tsx`). When the gym uploads its own logo (Dashboard → Website → Logo), the
+  logo replaces the lockup in the website header and footer.
+- Dashboards (trainer dashboard, member app): neutral greys with hairline borders and no shadows, near-black buttons, and colour only for status. Navy appears in the logo mark and the membership card.
 
-Type: Archivo on the website (condensed for headlines and prices, expanded for labels), Inter in the dashboards, JetBrains Mono for numbers. All fonts are bundled, so they also work offline.
+Type: Cormorant Garamond for website headings, Inter for text and for the dashboards, JetBrains Mono for numbers. All fonts are bundled, so they also work offline.
 
-The website also works things out from the gym's own data: whether the gym is **open right now** (India time, read
-from the opening-hours text, `src/lib/hours.ts`), today's hours, the price **per month** of each plan and how much a
-longer plan saves, with the cheapest per-month plan marked "Best value".
+The website shows no prices: visitors book a free trial or ask for a call back, and membership plans stay in the
+dashboard. It does show whether the gym is **open right now** (India time, read from the opening-hours text,
+`src/lib/hours.ts`) and today's hours.
 
 A complete web system for a personal trainer / small gym, built with **Next.js (React) + Supabase**.
 The public website is rendered on the server, so search engines see the full page and the gym shows up as a local business (structured data).
@@ -139,8 +139,8 @@ The site is a Progressive Web App:
 - Works on a weak connection: pages and fonts are cached by `public/sw.js`; member data is always fetched live.
 
 Before launch, fill in the real details under **Dashboard → Website**: the gym's logo, phone, WhatsApp, opening hours
-(e.g. `Mon–Sat 5:30 AM – 10 PM · Sun 7 AM – 12 PM`), plan prices, a main photo and gallery photos, and real member
-reviews. Fields left empty are hidden on the site. The sample reviews are labelled "Sample review" until replaced.
+(e.g. `Mon–Sat 5:30 AM – 10 PM · Sun 7 AM – 12 PM`), a short tagline (the big line at the top of the site), a main
+photo and gallery photos, and real member reviews. Plan prices are set under **Plans** and are used for memberships only. Fields left empty are hidden on the site. The sample reviews are labelled "Sample review" until replaced.
 
 ## Reliability extras (recommended)
 

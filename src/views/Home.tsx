@@ -1,59 +1,26 @@
 'use client';
 
-import { useEffect, useMemo, useState, type CSSProperties, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { store } from '../lib/store';
 import { useAsync, useAuth } from '../lib/hooks';
 import { loadPublicData, type PublicData } from '../lib/public-data';
-import { money, whatsappLink } from '../lib/utils';
+import { whatsappLink } from '../lib/utils';
 import { cld } from '../lib/media';
 import { nowInIndia, openStatus, parseHours, todayText, type OpenStatus } from '../lib/hours';
-import type { Plan } from '../lib/types';
 import { DemoBanner } from '../components/DemoBanner';
 import { Icon } from '../components/icons';
 import { InstallApp } from '../components/Pwa';
 import { ThemeToggle } from '../components/ThemeToggle';
-import { Plate, Wordmark } from '../components/Brand';
+import { Lockup } from '../components/Brand';
 
 const TRAINING = [
-  { icon: Icon.Dumbbell, title: 'Strength training', text: 'Free weights and machines, with form checks so you lift safely and keep adding weight.' },
-  { icon: Icon.Chart, title: 'Weight loss', text: 'Cardio and strength sessions plus a diet built on everyday Indian food.' },
-  { icon: Icon.User, title: 'Personal training', text: 'One-on-one sessions with a plan written around your body, goals and schedule.' },
-  { icon: Icon.Leaf, title: 'Diet plans', text: 'Veg and non-veg plans with meal times and portions, right in the member app.' },
+  { title: 'Strength training', text: 'Free weights and machines, with form checks so you lift safely and keep progressing.' },
+  { title: 'Weight loss', text: 'Cardio and strength sessions, with a diet built on everyday Indian food.' },
+  { title: 'Personal training', text: 'One-on-one sessions, planned around your body, your goals and your schedule.' },
+  { title: 'Diet plans', text: 'Veg and non-veg plans with meal times and portions, kept in the member app.' },
 ];
-
-interface PlanMath { months: number; perMonth: number; save: number }
-
-/** Per-month price and savings against the 1-month plan, worked out from the trainer's own prices. */
-function planMath(plans: Plan[]): { byId: Map<string, PlanMath | null>; fromPerMonth: number | null; bestId: string | null } {
-  const oneMonth = plans.filter((p) => p.duration_days >= 28 && p.duration_days <= 31).sort((a, b) => a.price - b.price)[0];
-  const byId = new Map<string, PlanMath | null>();
-  let fromPerMonth: number | null = null;
-  let bestId: string | null = null;
-  let best = Infinity;
-  for (const p of plans) {
-    const months = Math.round(p.duration_days / 30);
-    const perMonth = months >= 1 ? Math.round(Number(p.price) / months) : Number(p.price);
-    if (fromPerMonth === null || perMonth < fromPerMonth) fromPerMonth = perMonth;
-    if (months < 2) {
-      byId.set(p.id, null);
-      continue;
-    }
-    const save = oneMonth ? Number(oneMonth.price) * months - Number(p.price) : 0;
-    byId.set(p.id, { months, perMonth, save: Math.max(0, save) });
-    if (perMonth < best) {
-      best = perMonth;
-      bestId = p.id;
-    }
-  }
-  return { byId, fromPerMonth, bestId };
-}
-
-function term(days: number) {
-  const months = Math.round(days / 30);
-  if (days % 30 <= 1 && months >= 1) return months === 1 ? '1 month' : months === 12 ? '1 year' : `${months} months`;
-  return `${days} days`;
-}
+const GOALS = ['Strength training', 'Weight loss', 'Personal training', 'Diet plan', 'Not sure yet'];
 
 /** `initial` is rendered on the server when Supabase is configured; in demo mode data loads in the browser. */
 export default function Home({ initial }: { initial: PublicData | null }) {
@@ -61,19 +28,17 @@ export default function Home({ initial }: { initial: PublicData | null }) {
   const loaded = useAsync(async () => initial ?? loadPublicData(store), []);
   const pub = loaded.data ?? initial;
   const site = pub?.site;
-  const plans = useMemo(() => pub?.plans ?? [], [pub]);
   const testimonials = pub?.testimonials ?? [];
 
   const name = site?.gym_name ?? 'Medilife Fitness Club';
   const wa = whatsappLink(site?.whatsapp, `Hi ${name}, I found your website and want to know more about joining.`);
   const portalLink = session ? (session.role === 'admin' ? '/admin' : '/me') : '/login';
+  const portalLabel = session ? 'My plan' : 'Log in';
   const area = site?.address?.split(',')[0]?.trim() || 'Udaipur';
   const city = site?.address?.split(',').slice(1).map((s) => s.trim()).filter(Boolean)[0] ?? 'Udaipur';
-  // Words for the bottom of the plate's rim, e.g. "Udaipur · Rajasthan".
-  const place = site?.address?.split(',').slice(1).map((s) => s.trim()).filter(Boolean).slice(0, 2).join(' · ') || city;
   const igHandle = site?.instagram?.replace(/\/+$/, '').split('/').pop()?.replace(/^@/, '') || null;
   const tel = site?.phone?.replace(/[^\d+]/g, '') || null;
-  const math = useMemo(() => planMath(plans), [plans]);
+  const heroPhoto = cld(site?.hero_image_url, { w: 2000 });
 
   // Opening status uses the time in India, refreshed every minute (client-only, so the server HTML stays stable).
   const groups = useMemo(() => parseHours(site?.hours), [site?.hours]);
@@ -85,6 +50,7 @@ export default function Home({ initial }: { initial: PublicData | null }) {
     return () => window.clearInterval(t);
   }, [groups]);
 
+  // The header is see-through while it sits over the navy hero.
   const [overHero, setOverHero] = useState(true);
   useEffect(() => {
     const onScroll = () => setOverHero(window.scrollY < 24);
@@ -92,165 +58,146 @@ export default function Home({ initial }: { initial: PublicData | null }) {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-  const pickPlan = (planName: string) => window.dispatchEvent(new CustomEvent('pick-plan', { detail: planName }));
 
-  const heroPhoto = cld(site?.hero_image_url, { w: 1400, h: 1600 });
+  // Phone menu: locks page scrolling while open, closes on Escape.
+  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => {
+    document.documentElement.classList.toggle('menu-lock', menuOpen);
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenuOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.documentElement.classList.remove('menu-lock');
+    };
+  }, [menuOpen]);
+  const close = () => setMenuOpen(false);
+
+  const stats = [
+    site?.years_experience ? { value: `${site.years_experience}+`, label: site.years_experience === 1 ? 'year in Udaipur' : 'years in Udaipur' } : null,
+    site?.clients_trained ? { value: `${site.clients_trained.toLocaleString('en-IN')}+`, label: 'members trained' } : null,
+  ].filter(Boolean) as { value: string; label: string }[];
 
   return (
     <div className="site" id="top">
       <DemoBanner />
-      <header className={`topbar ${overHero ? 'over' : ''}`}>
+      <header className={`topbar ${overHero && !menuOpen ? 'over' : ''} ${menuOpen ? 'menu-open' : ''}`}>
         <div className="wrap topbar-inner">
-          <a href="#top" className="brand-link" aria-label={`${name} home`}>
-            {site?.logo_url ? <Wordmark name={name} logoUrl={site.logo_url} /> : <><Plate className="mini-plate" rim={name} place={place} /><Wordmark name={name} /></>}
+          <a href="#top" className="brand-link" aria-label={`${name} home`} onClick={close}>
+            <Lockup name={name} logoUrl={site?.logo_url} />
           </a>
-          <nav aria-label="Sections">
+          <nav className="desk-nav" aria-label="Sections">
             <a href="#training">Training</a>
-            <a href="#plans">Plans</a>
             <a href="#app">Member app</a>
             <a href="#visit">Visit</a>
           </nav>
-          <div className="right">
-            <ThemeToggle />
-            <Link href={portalLink} className="btn btn-sm btn-quiet">{session ? 'My plan' : 'Log in'}</Link>
-            <a href="#join" className="btn btn-sm btn-brand desk-inline">Free trial</a>
+          <div className="top-actions">
+            <ThemeToggle className="desk-only" />
+            <Link href={portalLink} className="top-link desk-only">{portalLabel}</Link>
+            <a href="#join" className="btn btn-sm btn-top" onClick={close}>Free trial</a>
+            <button type="button" className="menu-btn" aria-expanded={menuOpen} aria-controls="site-menu" onClick={() => setMenuOpen((o) => !o)}>
+              <span className="menu-lines" aria-hidden="true" />
+              <span className="menu-word">{menuOpen ? 'Close' : 'Menu'}</span>
+            </button>
           </div>
         </div>
       </header>
 
+      {menuOpen && (
+        <div className="menu-panel" id="site-menu" role="dialog" aria-modal="true" aria-label="Menu">
+          <nav className="menu-links" aria-label="Sections">
+            <a href="#training" onClick={close}>Training</a>
+            <a href="#app" onClick={close}>Member app</a>
+            {testimonials.length > 0 && <a href="#results" onClick={close}>Members</a>}
+            <a href="#visit" onClick={close}>Visit</a>
+            <a href="#join" onClick={close}>Book a free trial</a>
+          </nav>
+          <div className="menu-foot">
+            <Link href={portalLink} onClick={close}>{portalLabel}</Link>
+            {wa && <a href={wa} target="_blank" rel="noreferrer">WhatsApp</a>}
+            {site?.instagram && <a href={site.instagram} target="_blank" rel="noreferrer">Instagram</a>}
+            <ThemeToggle />
+          </div>
+        </div>
+      )}
+
       <main>
         {/* ---------------- hero ---------------- */}
         <section className={`hero ${heroPhoto ? 'has-photo' : ''}`}>
-          <div className="wrap hero-grid">
-            <div className="hero-copy">
-              <p className="status-pill" aria-live="polite">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {heroPhoto && <img className="hero-bg" src={heroPhoto} alt="" />}
+          {!heroPhoto && <div className="hero-rings" aria-hidden="true" />}
+          <div className="wrap hero-inner">
+            <p className="hero-kicker">{area} · {city}</p>
+            <h1 className="hero-title">
+              <span className="sr-only">{name}. </span>
+              {site?.tagline || 'Train smart. Live strong.'}
+            </h1>
+            {site?.bio && <p className="hero-lead">{site.bio}</p>}
+            <div className="hero-cta">
+              <a href="#join" className="btn btn-light">Book a free trial</a>
+              {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn btn-line-light"><Icon.Chat width={17} height={17} /> WhatsApp</a>}
+            </div>
+          </div>
+          <div className="wrap">
+            <div className="hero-foot">
+              <p className="hero-status" aria-live="polite">
                 {live?.status ? (
-                  <><span className={`status-dot ${live.status.open ? 'open' : 'closed'}`} aria-hidden="true" />{live.status.text}</>
+                  <><span className={`dot ${live.status.open ? 'open' : ''}`} aria-hidden="true" />{live.status.text}</>
                 ) : (
-                  <><Icon.Pin width={15} height={15} />{area}, {city}</>
+                  <>{name}</>
                 )}
               </p>
-              <h1 className="hero-title">
-                <span className="sr-only">{name}, gym in {area}, {city}</span>
-                <Wordmark name={name} className="hero-wm" />
-              </h1>
-              {site?.bio && <p className="hero-lead">{site.bio}</p>}
-              <div className="hero-cta">
-                <a href="#join" className="btn btn-lg btn-light">Book a free trial <Icon.ArrowRight width={18} height={18} /></a>
-                {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn btn-lg btn-outline-light"><Icon.Chat width={18} height={18} /> WhatsApp</a>}
-              </div>
+              {site?.address && <p className="hero-address">{site.address}</p>}
             </div>
-
-            <div className="hero-media">
-              {heroPhoto ? (
-                <div className="hero-photo">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={heroPhoto} alt={`Inside ${name}`} />
-                  <Plate className="plate badge-plate" rim={name} place={place} />
-                </div>
-              ) : (
-                <Plate className="plate hero-plate" rim={name} place={place} />
-              )}
-            </div>
-          </div>
-
-          <div className="facts-band">
-          <div className="wrap">
-            <dl className="hero-facts">
-              {live?.today !== undefined && groups && (
-                <div><dt>Today</dt><dd>{live?.today ?? 'Closed'}</dd></div>
-              )}
-              {math.fromPerMonth !== null && (
-                <div><dt>Plans from</dt><dd>{money(math.fromPerMonth)}<small> a month</small></dd></div>
-              )}
-              <div><dt>Find us</dt><dd>{area}</dd></div>
-            </dl>
-          </div>
           </div>
         </section>
 
         {/* ---------------- training ---------------- */}
         <section className="section" id="training">
-          <div className="wrap">
+          <div className="wrap split">
             <div className="sec-head">
-              <p className="kicker">Training</p>
-              <h2>Come in for one goal.<br />Leave with a plan.</h2>
-              <p>Every member gets a workout and a diet written by the coaches, and checked as you go.</p>
+              <p className="eyebrow">Training</p>
+              <h2>Come in for one goal. Leave with a plan.</h2>
+              <p>Every member gets a workout and a diet written by the coach, and checked as you go.</p>
+              {stats.length > 0 && (
+                <dl className="stats">
+                  {stats.map((s) => <div key={s.label}><dt>{s.label}</dt><dd>{s.value}</dd></div>)}
+                </dl>
+              )}
             </div>
-            <ul className="train">
+            <ul className="offer-list">
               {TRAINING.map((t) => (
                 <li key={t.title}>
-                  <span className="train-icon"><t.icon /></span>
-                  <div>
-                    <h3>{t.title}</h3>
-                    <p>{t.text}</p>
-                  </div>
+                  <h3>{t.title}</h3>
+                  <p>{t.text}</p>
                 </li>
               ))}
             </ul>
           </div>
         </section>
 
-        {/* ---------------- plans ---------------- */}
-        {plans.length > 0 && (
-          <section className="section tint" id="plans">
-            <div className="wrap">
-              <div className="sec-head">
-                <p className="kicker">Membership</p>
-                <h2>Plans &amp; prices</h2>
-                <p>Pay at the desk by cash or UPI. Longer plans cost less per month.</p>
-              </div>
-              <div className="plans" role="list">
-                {plans.map((p) => {
-                  const m = math.byId.get(p.id);
-                  const best = p.id === math.bestId;
-                  return (
-                    <article className={`plan ${best ? 'featured' : ''}`} key={p.id} role="listitem">
-                      <div className="plan-top">
-                        <h3 className="plan-name">{p.name}</h3>
-                        {best && <span className="plan-tag">Best value</span>}
-                      </div>
-                      <div className="plan-price"><span className="rupee">₹</span>{Number(p.price).toLocaleString('en-IN')}</div>
-                      <p className="plan-term">for {term(p.duration_days)}</p>
-                      {m && (
-                        <p className="plan-math">
-                          <strong>{money(m.perMonth)}</strong> a month{m.save > 0 && <> · <strong>save {money(m.save)}</strong></>}
-                        </p>
-                      )}
-                      {!!p.features?.length && (
-                        <ul>{p.features.map((f) => <li key={f}><Icon.Check width={16} height={16} />{f}</li>)}</ul>
-                      )}
-                      <a href="#join" className={`btn btn-block ${best ? 'btn-light' : ''}`} onClick={() => pickPlan(p.name)}>Choose {p.name}</a>
-                    </article>
-                  );
-                })}
-              </div>
-              {plans.length > 1 && <p className="swipe-hint" aria-hidden="true">Swipe to see all {plans.length} plans</p>}
-            </div>
-          </section>
-        )}
-
         {/* ---------------- member app ---------------- */}
-        <section className="section" id="app">
-          <div className="wrap app-promo">
+        <section className="section soft" id="app">
+          <div className="wrap split app-split">
             <div>
               <div className="sec-head">
-                <p className="kicker">Member app</p>
-                <h2>Your plan lives<br />on your phone.</h2>
+                <p className="eyebrow">Member app</p>
+                <h2>Your plan, in your pocket.</h2>
+                <p>Members log in to see the day’s workout, their diet, their progress and their membership. It installs like an app and opens on a weak connection.</p>
               </div>
-              <ul className="feature-list">
-                <li><span><Icon.Dumbbell /></span><div><strong>Today’s workout</strong><span>Exercises, sets and reps for each day of the week.</span></div></li>
-                <li><span><Icon.Leaf /></span><div><strong>Your diet</strong><span>Meal times and portions from your coach.</span></div></li>
-                <li><span><Icon.Chart /></span><div><strong>Progress</strong><span>Log your weight and watch the trend.</span></div></li>
-                <li><span><Icon.Receipt /></span><div><strong>Membership</strong><span>Days left, dues and every receipt.</span></div></li>
+              <ul className="app-list">
+                <li><strong>Today’s workout</strong><span>Exercises, sets and reps for each day of the week.</span></li>
+                <li><strong>Your diet</strong><span>Meal times and portions from your coach.</span></li>
+                <li><strong>Progress</strong><span>Log your weight and watch the trend.</span></li>
+                <li><strong>Membership</strong><span>Days left, dues and every receipt.</span></li>
               </ul>
-              <div className="row-actions wrap-row">
-                <Link href="/login" className="btn btn-lg">Member login <Icon.ArrowRight width={18} height={18} /></Link>
+              <div className="cta-row">
+                <Link href="/login" className="btn btn-solid">Member login</Link>
               </div>
               <InstallApp />
             </div>
             <div className="phone-stage" aria-hidden="true">
-              <Plate className="stage-plate" rim={name} place={place} />
               <div className="phone-mock">
                 <div className="phone-screen">
                   <div className="ps-head"><span>Good morning,<b>Neha</b></span><span className="ps-avatar">NG</span></div>
@@ -281,18 +228,20 @@ export default function Home({ initial }: { initial: PublicData | null }) {
 
         {/* ---------------- reviews ---------------- */}
         {testimonials.length > 0 && (
-          <section className="section navy" id="results">
+          <section className="section dark" id="results">
             <div className="wrap">
               <div className="sec-head">
-                <p className="kicker">Members</p>
+                <p className="eyebrow">Members</p>
                 <h2>In their words</h2>
               </div>
               <div className="quotes">
                 {testimonials.map((t) => (
                   <figure className="quote" key={t.id}>
-                    {t.result && <p className="quote-result">{t.result}</p>}
                     <blockquote>“{t.text}”</blockquote>
-                    <figcaption>{t.name}</figcaption>
+                    <figcaption>
+                      <span>{t.name}</span>
+                      {t.result && <span className="quote-result">{t.result}</span>}
+                    </figcaption>
                   </figure>
                 ))}
               </div>
@@ -302,9 +251,9 @@ export default function Home({ initial }: { initial: PublicData | null }) {
 
         {/* ---------------- gallery ---------------- */}
         {!!site?.gallery_urls?.length && (
-          <section className="section" style={{ paddingBottom: 0 }}>
+          <section className="section gallery-section" aria-label="Inside the gym">
             <div className="wrap">
-              <p className="kicker">Inside the gym</p>
+              <p className="eyebrow">Inside the gym</p>
               <div className="gallery">
                 {site.gallery_urls.slice(0, 5).map((u, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -315,29 +264,15 @@ export default function Home({ initial }: { initial: PublicData | null }) {
           </section>
         )}
 
-        {/* ---------------- instagram ---------------- */}
-        {igHandle && site?.instagram && (
-          <section className="ig-band">
-            <div className="wrap ig-inner">
-              <div>
-                <p className="kicker">Instagram</p>
-                <a className="ig-handle" href={site.instagram} target="_blank" rel="noreferrer" style={{ '--len': igHandle.length + 1 } as CSSProperties}>@{igHandle}</a>
-                <p>Workouts, member progress and gym updates, posted from the floor.</p>
-              </div>
-              <a className="btn btn-lg btn-light" href={site.instagram} target="_blank" rel="noreferrer"><Icon.Camera width={18} height={18} /> Follow on Instagram</a>
-            </div>
-          </section>
-        )}
-
         {/* ---------------- visit + trial ---------------- */}
         <section className="section" id="visit">
-          <div className="wrap visit">
+          <div className="wrap split visit">
             <div>
               <div className="sec-head">
-                <p className="kicker">Visit</p>
-                <h2>Find us in<br />{area}</h2>
+                <p className="eyebrow">Visit</p>
+                <h2>Find us in {area}</h2>
+                {site?.address && <p>{site.address}</p>}
               </div>
-              {site?.address && <p className="address"><Icon.Pin width={18} height={18} />{site.address}</p>}
               {site?.hours && (
                 groups ? (
                   <div className="hours" role="table" aria-label="Opening hours">
@@ -352,76 +287,59 @@ export default function Home({ initial }: { initial: PublicData | null }) {
                     })}
                   </div>
                 ) : (
-                  <p className="hours-text"><Icon.Clock width={18} height={18} />{site.hours}</p>
+                  <p className="hours-text">{site.hours}</p>
                 )
               )}
-              <div className="visit-actions">
-                {site?.map_url && <a className="btn" href={site.map_url} target="_blank" rel="noreferrer"><Icon.Pin width={18} height={18} /> Directions</a>}
-                {tel && <a className="btn btn-ghost" href={`tel:${tel}`}><Icon.Phone width={18} height={18} /> Call</a>}
-                {wa && <a className="btn btn-ghost" href={wa} target="_blank" rel="noreferrer"><Icon.Chat width={18} height={18} /> WhatsApp</a>}
+              <div className="row-links">
+                {site?.map_url && <a href={site.map_url} target="_blank" rel="noreferrer"><span>Get directions</span><Icon.ArrowUpRight width={18} height={18} /></a>}
+                {tel && <a href={`tel:${tel}`}><span>Call <em>{site?.phone}</em></span><Icon.ArrowRight width={18} height={18} /></a>}
+                {wa && <a href={wa} target="_blank" rel="noreferrer"><span>WhatsApp</span><Icon.ArrowUpRight width={18} height={18} /></a>}
+                {igHandle && site?.instagram && <a href={site.instagram} target="_blank" rel="noreferrer"><span>Instagram <em>@{igHandle}</em></span><Icon.ArrowUpRight width={18} height={18} /></a>}
               </div>
-              {site?.phone && <p className="muted small phone-line">{site.phone}</p>}
             </div>
             <div id="join">
-              <LeadForm planNames={plans.map((p) => p.name)} />
+              <LeadForm />
             </div>
           </div>
         </section>
       </main>
 
       <footer className="site-footer">
-        <div className="wrap">
-          <div className="foot-grid">
-            <div className="foot-brand">
-              {site?.logo_url ? <Wordmark name={name} logoUrl={site.logo_url} /> : <Wordmark name={name} />}
-              {site?.address && <p>{site.address}</p>}
-              {site?.hours && <p>{site.hours}</p>}
-            </div>
-            <div>
-              <h4>On this page</h4>
-              <ul><li><a href="#training">Training</a></li><li><a href="#plans">Plans</a></li><li><a href="#app">Member app</a></li><li><a href="#visit">Visit</a></li></ul>
-            </div>
-            <div>
-              <h4>Contact</h4>
-              <ul>
-                {tel && <li><a href={`tel:${tel}`}>{site?.phone}</a></li>}
-                {wa && <li><a href={wa} target="_blank" rel="noreferrer">WhatsApp</a></li>}
-                {site?.instagram && <li><a href={site.instagram} target="_blank" rel="noreferrer">Instagram</a></li>}
-                {site?.map_url && <li><a href={site.map_url} target="_blank" rel="noreferrer">Google Maps</a></li>}
-              </ul>
-            </div>
-            <div>
-              <h4>Members</h4>
-              <ul><li><Link href={portalLink}>Member login</Link></li><li><a href="#join">Free trial</a></li></ul>
-            </div>
+        <div className="wrap foot-grid">
+          <div className="foot-brand">
+            <Lockup name={name} logoUrl={site?.logo_url} />
+            {site?.address && <p>{site.address}</p>}
+            {site?.hours && <p>{site.hours}</p>}
           </div>
+          <nav className="foot-links" aria-label="Footer">
+            <a href="#training">Training</a>
+            <a href="#app">Member app</a>
+            <a href="#visit">Visit</a>
+            <a href="#join">Free trial</a>
+            <Link href={portalLink}>{session ? 'My plan' : 'Member login'}</Link>
+          </nav>
+          <nav className="foot-links" aria-label="Contact">
+            {tel && <a href={`tel:${tel}`}>{site?.phone}</a>}
+            {wa && <a href={wa} target="_blank" rel="noreferrer">WhatsApp</a>}
+            {site?.instagram && <a href={site.instagram} target="_blank" rel="noreferrer">Instagram</a>}
+            {site?.map_url && <a href={site.map_url} target="_blank" rel="noreferrer">Google Maps</a>}
+          </nav>
+        </div>
+        <div className="wrap">
           <div className="foot-bottom">
             <span>© {new Date().getFullYear()} {name}</span>
             <span>Website by <a href="https://www.hvanetia.me/" target="_blank" rel="noreferrer">Harsh Vanetia</a></span>
           </div>
         </div>
       </footer>
-
-      <nav className="tabbar" aria-label="Quick links">
-        <a href="#top"><Icon.Home /><span>Home</span></a>
-        <a href="#plans"><Icon.Tag /><span>Plans</span></a>
-        <a href="#join" className="join"><span><Icon.Bolt /></span><span>Free trial</span></a>
-        <a href="#visit"><Icon.Pin /><span>Visit</span></a>
-        <Link href={portalLink}><Icon.User /><span>{session ? 'My plan' : 'Log in'}</span></Link>
-      </nav>
     </div>
   );
 }
 
-function LeadForm({ planNames }: { planNames: string[] }) {
+function LeadForm() {
   const [form, setForm] = useState({ name: '', phone: '', email: '', message: '', interested_plan: '' });
   const [state, setState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const [err, setErr] = useState('');
-  useEffect(() => {
-    const onPick = (e: Event) => setForm((f) => ({ ...f, interested_plan: (e as CustomEvent<string>).detail }));
-    window.addEventListener('pick-plan', onPick);
-    return () => window.removeEventListener('pick-plan', onPick);
-  }, []);
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value });
 
   async function submit(e: FormEvent) {
@@ -459,21 +377,22 @@ function LeadForm({ planNames }: { planNames: string[] }) {
 
   return (
     <form className="lead-form" onSubmit={submit}>
-      <p className="kicker" style={{ margin: 0 }}>Free trial</p>
+      <p className="eyebrow">Free trial</p>
       <h3>Book your first session</h3>
-      <p className="muted small" style={{ margin: 0 }}>Leave your number and we’ll call you back.</p>
-      <label className="sr-only" htmlFor="lead-name">Your name</label>
-      <input id="lead-name" required placeholder="Your name" autoComplete="name" value={form.name} onChange={set('name')} />
-      <label className="sr-only" htmlFor="lead-phone">Mobile number</label>
-      <input id="lead-phone" required placeholder="Mobile number" inputMode="tel" autoComplete="tel" value={form.phone} onChange={set('phone')} />
-      <select id="lead-plan" value={form.interested_plan} onChange={set('interested_plan')} aria-label="Interested in">
-        <option value="">Interested in…</option>
-        {planNames.map((n) => <option key={n}>{n}</option>)}
+      <p className="muted">Leave your number and we’ll call you back.</p>
+      <label htmlFor="lead-name">Name</label>
+      <input id="lead-name" required autoComplete="name" value={form.name} onChange={set('name')} />
+      <label htmlFor="lead-phone">Mobile number</label>
+      <input id="lead-phone" required inputMode="tel" autoComplete="tel" value={form.phone} onChange={set('phone')} />
+      <label htmlFor="lead-goal">Your goal</label>
+      <select id="lead-goal" value={form.interested_plan} onChange={set('interested_plan')}>
+        <option value="">Choose one (optional)</option>
+        {GOALS.map((g) => <option key={g}>{g}</option>)}
       </select>
-      <label className="sr-only" htmlFor="lead-msg">Your goal or preferred time</label>
-      <textarea id="lead-msg" rows={3} placeholder="Your goal or preferred time (optional)" value={form.message} onChange={set('message')} />
+      <label htmlFor="lead-msg">Preferred time or a note <span className="muted">(optional)</span></label>
+      <textarea id="lead-msg" rows={3} value={form.message} onChange={set('message')} />
       {state === 'error' && <div className="error-box">{err}</div>}
-      <button className="btn btn-lg btn-block btn-brand" disabled={state === 'sending'}>
+      <button className="btn btn-block btn-solid" disabled={state === 'sending'}>
         {state === 'sending' ? 'Sending…' : 'Request a call back'}
       </button>
     </form>

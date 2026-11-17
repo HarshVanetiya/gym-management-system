@@ -4,9 +4,9 @@ import { Providers } from './providers';
 import { RegisterServiceWorker } from '../components/Pwa';
 import { themeInitScript } from '../components/ThemeToggle';
 // Fonts are bundled with the app (no Google Fonts request), so they also work offline.
-// Archivo with its width axis: condensed headlines and expanded labels from one family (website).
-import '@fontsource-variable/archivo/wdth.css';
-// Inter for the trainer dashboard and member app.
+// Cormorant Garamond for website headings (upright and italic), Inter for text and the dashboards.
+import '@fontsource-variable/cormorant-garamond';
+import '@fontsource-variable/cormorant-garamond/wght-italic.css';
 import '@fontsource-variable/inter';
 import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';
@@ -26,8 +26,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#071a44' },
-    { media: '(prefers-color-scheme: dark)', color: '#040c22' },
+    { media: '(prefers-color-scheme: light)', color: '#0a1730' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a1430' },
   ],
 };
 
